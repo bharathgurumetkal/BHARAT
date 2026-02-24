@@ -1,0 +1,11 @@
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\bin\Debug\net8.0\Insurance.Domain.deps.json
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\bin\Debug\net8.0\Insurance.Domain.dll
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\bin\Debug\net8.0\Insurance.Domain.pdb
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.AssemblyInfoInputs.cache
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.AssemblyInfo.cs
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.dll
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\refint\Insurance.Domain.dll
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.pdb
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\ref\Insurance.Domain.dll
