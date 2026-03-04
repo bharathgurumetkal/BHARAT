@@ -1,0 +1,123 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-1">Hello, {{ userName }}</h1>
+      <p class="text-gray-500 font-medium">Welcome to your personalized insurance dashboard.</p>
+    </div>
+    
+    <div class="flex gap-4">
+      <div class="px-4 py-2 rounded-lg bg-white border border-gray-200 shadow-sm flex items-center gap-2">
+        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+        <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">{{ role }} View</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  @if (errorMessage) {
+    <div class="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-center font-medium">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-32 bg-gray-100 animate-pulse rounded-xl"></div>
+      }
+    </div>
+  }
+
+  <!-- Stats Grid -->
+  @if (!isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (stat of stats; track stat.label) {
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-3">{{ stat.label }}</div>
+          <div class="flex items-end justify-between">
+            <div class="text-2xl font-bold text-gray-900">{{ stat.value }}</div>
+            @if (stat.trend) { <div class="text-emerald-600 text-xs font-bold">{{ stat.trend }}</div> }
+            @if (stat.detail) { <div class="text-gray-400 text-xs font-medium">{{ stat.detail }}</div> }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Content Section -->
+  @if (!isLoading) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Activity Feed -->
+      <div [class]="role === 'Customer' ? 'lg:col-span-3 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm' : 'lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm'">
+        <div class="flex items-center justify-between mb-8">
+          <h3 class="text-xl font-bold text-gray-900">Recent Activity</h3>
+          @if (recentActivity.length > 0) {
+            <button class="text-sm font-bold text-blue-600 hover:underline">View All</button>
+          }
+        </div>
+        
+        <div class="space-y-4">
+          @if (recentActivity.length === 0) {
+            <div class="text-center py-10">
+              <p class="text-gray-400 text-sm italic">No recent activity found.</p>
+            </div>
+          }
+
+          @for (activity of recentActivity; track activity.title + activity.date) {
+            <div class="flex items-center justify-between p-5 rounded-xl border border-gray-50 bg-gray-50/50 hover:bg-gray-50 transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600">
+                  @if (activity.type === 'claim') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  } @else if (activity.type === 'app' || activity.type === 'user') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  } @else {
+                    <span class="material-icons">policy</span>
+                  }
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-gray-900">{{ activity.title }}</div>
+                  <div class="text-xs text-gray-500 font-medium">{{ activity.subtitle }}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-tight">{{ activity.date | date:'short' }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      @if (role !== 'Customer') {
+        <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+          <h3 class="text-xl font-bold text-gray-900 mb-8">Quick Actions</h3>
+          <div class="space-y-3">
+            @if (role === 'Admin') {
+              <button class="w-full text-left p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-blue-200 transition-all font-semibold text-gray-700 text-sm flex items-center justify-between group">
+                Add New Agent
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            }
+          </div>
+
+          <div class="mt-auto pt-8">
+            <div class="p-6 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-100">
+                <div class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">Support Hero</div>
+                <p class="text-xs font-medium leading-relaxed">Need medical or technical assistance?</p>
+                <button class="mt-4 w-full bg-white text-blue-600 py-2 rounded-lg text-xs font-bold">Contact Support</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

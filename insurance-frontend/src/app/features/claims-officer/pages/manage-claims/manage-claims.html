@@ -1,0 +1,115 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">Manage Claims</h1>
+        <p class="text-gray-500 font-medium">Review, investigate, and settle insurance claims across the platform.</p>
+    </div>
+
+    <!-- Feedback Messages -->
+    <div *ngIf="successMessage()" class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl font-bold animate-in zoom-in-95">
+        {{ successMessage() }}
+    </div>
+    <div *ngIf="errorMessage()" class="p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl font-bold animate-in zoom-in-95">
+        {{ errorMessage() }}
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="space-y-4">
+        <div *ngFor="let i of [1,2,3,4,5]" class="h-24 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
+    </div>
+
+    <!-- Claims List -->
+    <div *ngIf="!isLoading() && claims().length === 0" class="bg-white p-20 rounded-[2.5rem] border border-gray-200 text-center">
+        <div class="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 00-2 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No Claims Found</h3>
+        <p class="text-gray-500">There are currently no insurance claims to process.</p>
+    </div>
+
+    <div *ngIf="!isLoading() && claims().length > 0" class="space-y-4">
+        <div *ngFor="let claim of claims()" class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm hover:border-blue-100 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+                <div [class]="'w-12 h-12 rounded-xl border flex items-center justify-center ' + getStatusClass(claim.status)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h4 class="font-bold text-gray-900">Policy #{{ claim.policyNumber }}</h4>
+                        <span [class]="'px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-full border ' + getStatusClass(claim.status)">
+                            {{ claim.status }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-400 font-medium italic mb-1">{{ claim.reason }}</p>
+                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-2">Requested: {{ claim.claimAmount | currency }} • Filed {{ claim.createdAt | date:'shortDate' }}</div>
+                    
+                    <!-- Documents List -->
+                    <div *ngIf="claim.documents && claim.documents.length > 0" class="flex flex-wrap gap-2 mt-2">
+                        <a *ngFor="let doc of claim.documents; let i = index" 
+                           [href]="getDownloadUrl(doc.filePath)" 
+                           target="_blank" 
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[10px] font-bold transition-colors border border-blue-100/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            {{ doc.fileName || 'Doc ' + (i + 1) }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <ng-container [ngSwitch]="claim.status">
+                    <!-- Submitted State -->
+                    <button 
+                        *ngSwitchCase="'Submitted'"
+                        (click)="process(claim.id, 'start')" 
+                        [disabled]="processingId() === claim.id"
+                        class="px-5 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
+                    >
+                        Start Review
+                    </button>
+
+                    <!-- Under Review State -->
+                    <ng-container *ngSwitchCase="'UnderReview'">
+                        <button 
+                            (click)="process(claim.id, 'approve')" 
+                            [disabled]="processingId() === claim.id"
+                            class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all"
+                        >
+                            Approve
+                        </button>
+                        <button 
+                            (click)="process(claim.id, 'reject')" 
+                            [disabled]="processingId() === claim.id"
+                            class="px-5 py-2.5 bg-white text-red-600 border border-red-100 text-xs font-bold rounded-xl hover:bg-red-50 transition-all"
+                        >
+                            Reject
+                        </button>
+                    </ng-container>
+
+                    <!-- Approved State -->
+                    <button 
+                        *ngSwitchCase="'Approved'"
+                        (click)="process(claim.id, 'settle')" 
+                        [disabled]="processingId() === claim.id"
+                        class="px-5 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-black transition-all"
+                    >
+                        Settle & Pay
+                    </button>
+
+                    <!-- Terminal States -->
+                    <div *ngSwitchCase="'Settled'" class="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">
+                        Payout Completed
+                    </div>
+                    <div *ngSwitchDefault class="px-4 py-2 bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                        No Action Required
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>

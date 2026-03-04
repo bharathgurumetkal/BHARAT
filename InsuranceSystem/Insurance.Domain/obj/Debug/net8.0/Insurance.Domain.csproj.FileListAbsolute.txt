@@ -9,3 +9,4 @@ C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\refint\Insurance.Domain.dll
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.pdb
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\ref\Insurance.Domain.dll
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Domain\obj\Debug\net8.0\Insurance.Domain.sourcelink.json

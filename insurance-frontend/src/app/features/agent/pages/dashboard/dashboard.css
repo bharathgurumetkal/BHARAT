@@ -1,0 +1,31 @@
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+.shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.animate-in {
+    animation-duration: 700ms;
+}
+
+.tracking-tight {
+    letter-spacing: -0.025em;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
+}
+
+.bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+}

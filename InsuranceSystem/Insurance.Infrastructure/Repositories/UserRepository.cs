@@ -1,5 +1,6 @@
 ﻿using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
+using Insurance.Domain.Enums;
 using Insurance.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,15 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
+
+    public async Task<List<User>> GetByRoleAsync(string role)
+    {
+        if (Enum.TryParse<RoleType>(role, out var roleType))
+        {
+            return await _context.Users.Where(u => u.Role == roleType).ToListAsync();
+        }
+        return new List<User>();
     }
 
     public async Task<bool> EmailExistsAsync(string email)

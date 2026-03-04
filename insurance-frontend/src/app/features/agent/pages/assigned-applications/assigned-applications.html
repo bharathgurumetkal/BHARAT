@@ -1,0 +1,264 @@
+<div class="min-h-screen bg-slate-50 font-sans leading-relaxed text-gray-700">
+  <div class="px-8 py-8 space-y-8 animate-in fade-in duration-500">
+    
+    <!-- Title Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-800 tracking-normal">Application Review</h1>
+        <p class="text-sm text-gray-500 mt-1">Review and process policy applications assigned for your verification.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button (click)="loadApplications()" 
+                class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Sync Records
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Queue Total</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ applications().length }}</h3>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">High Risk Assets</p>
+        <h3 class="text-3xl font-bold text-rose-600 mt-2">{{ applications().filter(a => a.riskZone === 'High').length }}</h3>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-24">
+        <div class="w-10 h-10 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin"></div>
+        <p class="mt-4 text-sm text-gray-500 font-medium">Loading assigned queue...</p>
+      </div>
+
+      <div *ngIf="!isLoading() && applications().length === 0" class="flex flex-col items-center justify-center py-32 text-center px-6">
+        <div class="bg-gray-50 p-6 rounded-full mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700">No applications assigned</h3>
+        <p class="text-sm text-gray-500 max-w-sm mx-auto mt-2 leading-relaxed">Your workflow queue is currently clear. New submissions from your assigned customers will appear here.</p>
+      </div>
+
+      <div *ngIf="!isLoading() && applications().length > 0" class="overflow-x-auto text-sm">
+        <table class="w-full text-left">
+          <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+              <th class="px-6 py-4 text-sm font-medium text-gray-600 uppercase tracking-wide">Application ID</th>
+              <th class="px-6 py-4 text-sm font-medium text-gray-600 uppercase tracking-wide">Customer & Product</th>
+              <th class="px-6 py-4 text-sm font-medium text-gray-600 uppercase tracking-wide">Financials</th>
+              <th class="px-6 py-4 text-sm font-medium text-gray-600 uppercase tracking-wide">Risk Level</th>
+              <th class="px-6 py-4 text-sm font-medium text-gray-600 uppercase tracking-wide text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr *ngFor="let app of applications()" 
+                (click)="selectApplication(app)"
+                class="hover:bg-gray-50 transition-colors cursor-pointer active:bg-gray-100 group">
+              <td class="px-6 py-5">
+                <span class="text-sm font-mono font-medium text-blue-600 uppercase">APP-{{ app.id.substring(0,8) }}</span>
+                <p class="text-[11px] text-gray-400 font-medium mt-0.5">{{ app.submittedAt | date:'MMM d, y' }}</p>
+              </td>
+              <td class="px-6 py-5">
+                <p class="text-sm font-semibold text-gray-800">{{ app.customerName }}</p>
+                <p class="text-xs text-gray-500 font-medium tracking-tight mt-0.5">{{ app.productName }}</p>
+              </td>
+              <td class="px-6 py-5">
+                <div class="space-y-0.5">
+                  <p class="text-sm font-bold text-gray-900">COV: {{ app.requestedCoverageAmount | currency }}</p>
+                  <p class="text-[11px] font-bold text-indigo-500 uppercase">PRM: {{ app.calculatedPremium | currency }}</p>
+                </div>
+              </td>
+              <td class="px-6 py-5">
+                <span [class]="app.riskZone === 'High' ? 'bg-red-50 text-red-700 border-red-100' : (app.riskZone === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-green-50 text-green-700 border-green-100')" 
+                      class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border">
+                  {{ app.riskZone }} Risk
+                </span>
+              </td>
+              <td class="px-6 py-5 text-right" (click)="$event.stopPropagation()">
+                <div class="flex items-center justify-end gap-2" *ngIf="app.status === 'Submitted' || app.status === 'AssignedToAgent'">
+                  <button (click)="process(app.id, 'approve')"
+                          [disabled]="processingId() === app.id"
+                          class="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span *ngIf="processingId() !== app.id">Approve</span>
+                    <span *ngIf="processingId() === app.id">...</span>
+                  </button>
+                  <button (click)="process(app.id, 'reject')"
+                          [disabled]="processingId() === app.id"
+                          class="px-4 py-2 bg-white text-red-600 border border-red-100 text-xs font-semibold rounded-lg hover:bg-red-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span *ngIf="processingId() !== app.id">Reject</span>
+                    <span *ngIf="processingId() === app.id">...</span>
+                  </button>
+                </div>
+                <div *ngIf="app.status !== 'Submitted' && app.status !== 'AssignedToAgent'" class="text-[11px] font-bold uppercase tracking-wider text-slate-400 pr-2">
+                  Completed
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detail Drawer Overlay -->
+    <div *ngIf="selectedApp()" 
+         class="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300"
+         (click)="closeDrawer()">
+      
+      <!-- Drawer Content -->
+      <div class="absolute inset-y-0 right-0 w-full max-w-xl bg-white shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right-full duration-500"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Drawer Header -->
+        <div class="h-20 border-b border-gray-100 flex items-center justify-between px-8 shrink-0 bg-white">
+          <div>
+            <h2 class="text-xl font-bold text-gray-800">Application Audit</h2>
+            <p class="text-xs font-mono font-medium text-blue-500 uppercase mt-0.5 tracking-wider">RET-ID: {{ selectedApp()?.id?.toUpperCase() }}</p>
+          </div>
+          <button (click)="closeDrawer()" class="p-2 hover:bg-gray-50 rounded-lg text-gray-400 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-32">
+          
+          <!-- Section 1: Application Info -->
+          <div class="bg-gray-50 rounded-xl p-5 space-y-4 border border-gray-100/50">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Product Specification</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="col-span-2 bg-white p-3 rounded-lg border border-gray-100">
+                <p class="text-xs text-gray-400 font-medium">Selected Product</p>
+                <p class="text-base font-bold text-gray-800 mt-0.5">{{ selectedApp()?.productName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 font-medium">Desired Coverage</p>
+                <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedApp()?.requestedCoverageAmount | currency }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 font-medium font-bold text-indigo-600">Calculated Premium</p>
+                <p class="text-lg font-bold text-indigo-600 mt-1">{{ selectedApp()?.calculatedPremium | currency }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Customer Info -->
+          <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Customer Context</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 font-medium">Applicant Name</span>
+                <span class="text-sm font-bold text-gray-800">{{ selectedApp()?.customerName }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 font-medium">Submission Date</span>
+                <span class="text-sm font-semibold text-gray-700">{{ selectedApp()?.submittedAt | date:'longDate' }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-xs text-gray-500 font-medium">Current Status</span>
+                <span [class]="getStatusClass(selectedApp()?.status || '')" class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{{ selectedApp()?.status }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Property Info -->
+          <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Property Appraisal</h3>
+            <div class="space-y-4">
+              <div class="bg-white/50 p-3 rounded-lg border border-gray-100">
+                <p class="text-xs text-gray-400 font-medium">Physical Address</p>
+                <p class="text-sm font-semibold text-gray-800 mt-1">{{ selectedApp()?.address }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-gray-400 font-medium">Category</p>
+                  <p class="text-sm font-semibold text-gray-800 mt-1">{{ selectedApp()?.propertySubCategory }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 font-medium">Market Value</p>
+                  <p class="text-sm font-bold text-gray-900 mt-1">{{ selectedApp()?.marketValue | currency }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 font-medium">Year Built</p>
+                  <p class="text-sm font-semibold text-gray-800 mt-1">{{ selectedApp()?.yearBuilt }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 font-medium">Risk Zone</p>
+                  <p class="text-sm font-semibold text-amber-600 mt-1 font-mono uppercase">{{ selectedApp()?.riskZone }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 p-3 bg-white/50 rounded-lg border border-gray-100">
+                <div [class]="selectedApp()?.hasSecuritySystem ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'"
+                     class="w-6 h-6 rounded flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <span class="text-xs font-bold" [class]="selectedApp()?.hasSecuritySystem ? 'text-emerald-700' : 'text-gray-400 leading-none'">
+                  {{ selectedApp()?.hasSecuritySystem ? 'Security System Verified' : 'No Security System Reported' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sticky Drawer Action Footer -->
+        <div class="p-8 border-t border-gray-100 bg-white shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]" 
+             *ngIf="selectedApp()?.status === 'Submitted' || selectedApp()?.status === 'AssignedToAgent'">
+          <div class="flex gap-4">
+            <button (click)="process(selectedApp()!.id, 'approve')"
+                    [disabled]="processingId() === selectedApp()?.id"
+                    [class.opacity-50]="processingId() === selectedApp()?.id"
+                    class="flex-1 py-3 bg-slate-900 text-white text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span *ngIf="processingId() !== selectedApp()?.id">Approve Application</span>
+              <span *ngIf="processingId() === selectedApp()?.id">Approving...</span>
+            </button>
+            <button (click)="process(selectedApp()!.id, 'reject')"
+                    [disabled]="processingId() === selectedApp()?.id"
+                    [class.opacity-50]="processingId() === selectedApp()?.id"
+                    class="flex-1 py-3 bg-white text-red-600 border border-red-100 text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-red-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span *ngIf="processingId() !== selectedApp()?.id">Reject</span>
+              <span *ngIf="processingId() === selectedApp()?.id">...</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-8 border-t border-gray-100 bg-slate-50 shrink-0 text-center" 
+             *ngIf="selectedApp()?.status !== 'Submitted' && selectedApp()?.status !== 'AssignedToAgent'">
+          <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Application Processed</p>
+          <p class="text-xs text-slate-400 mt-1">This application has already been {{ selectedApp()?.status?.includes('Approve') ? 'approved' : 'rejected' }}.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div *ngIf="successMessage()" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-full duration-500">
+      <div class="bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm font-semibold tracking-tight">{{ successMessage() }}</span>
+      </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div *ngIf="errorMessage()" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-full duration-500">
+      <div class="bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm font-semibold tracking-tight">{{ errorMessage() }}</span>
+      </div>
+    </div>
+  </div>
+</div>

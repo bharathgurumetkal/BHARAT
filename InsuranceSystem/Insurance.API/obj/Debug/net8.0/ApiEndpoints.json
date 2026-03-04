@@ -1,12 +1,332 @@
 [
   {
     "ContainingType": "Insurance.API.Controllers.AdminController",
-    "Method": "GetAdminDashboard",
-    "RelativePath": "api/Admin/dashboard",
+    "Method": "AddAgent",
+    "RelativePath": "api/Admin/add-agent",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Insurance.Application.DTOs.Auth.RegisterRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "AddClaimsOfficer",
+    "RelativePath": "api/Admin/add-claimsofficer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Insurance.Application.DTOs.Auth.RegisterRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "AgentPerformance",
+    "RelativePath": "api/Admin/agent-performance",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAgentPerformanceAnalytics",
+    "RelativePath": "api/Admin/agent-performance-analytics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllAgents",
+    "RelativePath": "api/Admin/agents",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAiAnalytics",
+    "RelativePath": "api/Admin/ai-analytics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllApplications",
+    "RelativePath": "api/Admin/applications",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "AssignAgentToApplication",
+    "RelativePath": "api/Admin/assign-agent-to-application/{applicationId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "applicationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.PolicyApplication.AssignAgentToApplicationDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "AssignCustomer",
+    "RelativePath": "api/Admin/assign-customer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "customerId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "agentId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "ClaimsReport",
+    "RelativePath": "api/Admin/claims-report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllClaimsOfficers",
+    "RelativePath": "api/Admin/claimsofficers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "CreatePolicy",
+    "RelativePath": "api/Admin/create-policy",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.Policy.CreatePolicyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "CreateProduct",
+    "RelativePath": "api/Admin/create-product",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.PolicyProduct.CreatePolicyProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllCustomers",
+    "RelativePath": "api/Admin/customers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllPolicies",
+    "RelativePath": "api/Admin/policies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllProducts",
+    "RelativePath": "api/Admin/products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "RevenueReport",
+    "RelativePath": "api/Admin/revenue-report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "ApproveApplication",
+    "RelativePath": "api/Agent/approve-application/{applicationId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "applicationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetAssignedApplications",
+    "RelativePath": "api/Agent/assigned-applications",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetMyCommissions",
+    "RelativePath": "api/Agent/commissions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetCustomerPolicies",
+    "RelativePath": "api/Agent/customer/{customerId}/policies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "customerId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetDashboardSummary",
+    "RelativePath": "api/Agent/dashboard-summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetAssignedCustomers",
+    "RelativePath": "api/Agent/my-customers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "GetMyPolicies",
+    "RelativePath": "api/Agent/policies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AgentController",
+    "Method": "RejectApplication",
+    "RelativePath": "api/Agent/reject-application/{applicationId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "applicationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -39,6 +359,239 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
+    "Method": "GetClaims",
+    "RelativePath": "api/ClaimsOfficer/claims",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
+    "Method": "GetPolicies",
+    "RelativePath": "api/ClaimsOfficer/policies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
+    "Method": "ReviewClaim",
+    "RelativePath": "api/ClaimsOfficer/review",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "claimId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "approve",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
+    "Method": "Settle",
+    "RelativePath": "api/ClaimsOfficer/settle",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "claimId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
+    "Method": "StartReview",
+    "RelativePath": "api/ClaimsOfficer/start-review",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "claimId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "GetMyApplications",
+    "RelativePath": "api/Customer/applications",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "ApplyForProduct",
+    "RelativePath": "api/Customer/apply-product",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.PolicyApplication.ApplyForProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "GetMyClaims",
+    "RelativePath": "api/Customer/claims",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "MakePayment",
+    "RelativePath": "api/Customer/pay",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.Payment.MakePaymentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "PayPremium",
+    "RelativePath": "api/Customer/pay-premium/{policyId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "policyId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "GetMyPolicies",
+    "RelativePath": "api/Customer/policies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "GetProducts",
+    "RelativePath": "api/Customer/products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "SubmitClaim",
+    "RelativePath": "api/Customer/submit-claim",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PolicyId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "ClaimAmount",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "Reason",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Documents",
+        "Type": "System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "files",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.NotificationController",
+    "Method": "GetNotifications",
+    "RelativePath": "api/Notification",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.NotificationController",
+    "Method": "MarkAsRead",
+    "RelativePath": "api/Notification/{id}/read",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.NotificationController",
+    "Method": "GetUnreadCount",
+    "RelativePath": "api/Notification/unread-count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

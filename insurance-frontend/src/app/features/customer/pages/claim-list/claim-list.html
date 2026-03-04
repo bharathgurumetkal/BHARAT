@@ -1,0 +1,392 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">My Claims</h1>
+            <p class="text-gray-500 font-medium">Track and submit insurance claims for your active policies.</p>
+        </div>
+        @if (!showForm()) {
+            <button 
+                (click)="showForm.set(true)" 
+                [disabled]="allPolicies().length === 0"
+                class="btn-primary flex items-center gap-2 justify-center"
+            >
+                <span class="material-icons">add_circle</span>
+                File New Claim
+            </button>
+        }
+    </div>
+
+    <!-- Claim Submission Modal -->
+    @if (showForm()) {
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/20 backdrop-blur-sm animate-in fade-in transition-all">
+            <div class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+                <div class="p-8 lg:p-12">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">New Claim</div>
+                            <h2 class="text-3xl font-bold text-gray-900">File a Claim</h2>
+                        </div>
+                        <button (click)="resetForm()" class="p-2 text-gray-400 hover:text-gray-900 transition-colors">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+
+                    @if (successMessage()) {
+                        <!-- Success State -->
+                        <div class="py-12 flex flex-col items-center text-center animate-in zoom-in-90 duration-500">
+                            <div class="w-32 h-32 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-8 shadow-inner shadow-emerald-100/50">
+                                <span class="material-icons !text-7xl animate-in scale-in-50 duration-700">task_alt</span>
+                            </div>
+                            
+                            <h3 class="text-3xl font-black text-gray-900 mb-4 tracking-tight">Claim Filed Successfully</h3>
+                            <p class="text-gray-500 max-w-sm mb-12 leading-relaxed">
+                                {{ successMessage() }} We'll process your request as quickly as possible.
+                            </p>
+
+                            <div class="w-full">
+                                <button (click)="resetForm()" class="btn-primary w-full py-5 rounded-2xl flex items-center justify-center gap-3">
+                                    <span class="material-icons">check</span>
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    } @else {
+                        <form [formGroup]="claimForm" (ngSubmit)="$event.preventDefault(); initiateSubmit()" class="space-y-6">
+                            
+                            <!-- Policy Selection -->
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Select Policy</label>
+                                <select formControlName="policyId" class="input-field w-full">
+                                    <option value="">Choose Policy...</option>
+                                    @for (p of allPolicies(); track p.id) {
+                                        <option [value]="p.id" [disabled]="isPolicyDisabled(p)">
+                                            {{ getFormattedPolicyLabel(p) }}
+                                        </option>
+                                    }
+                                </select>
+                                @if (allPolicies().length === 0) {
+                                    <p class="text-[10px] text-amber-600 font-bold mt-1 uppercase italic">No active policies available for claim.</p>
+                                }
+                            </div>
+
+                            @if (selectedPolicy()) {
+                                <!-- 1. Policy Summary Card -->
+                                <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 animate-in slide-in-from-top-2">
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Policy Summary</div>
+                                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div>
+                                            <div class="text-[9px] font-bold text-gray-400 uppercase">Number</div>
+                                            <div class="text-sm font-bold text-gray-900">{{ selectedPolicy()!.policyNumber }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[9px] font-bold text-gray-400 uppercase">Coverage</div>
+                                            <div class="text-sm font-bold text-emerald-600">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[9px] font-bold text-gray-400 uppercase">Status</div>
+                                            <span [class]="'px-2 py-0.5 text-[8px] font-black uppercase rounded-full border ' + getStatusClass(selectedPolicy()!.status)">
+                                                {{ selectedPolicy()!.status }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div class="text-[9px] font-bold text-gray-400 uppercase">End Date</div>
+                                            <div class="text-sm font-bold text-gray-900">{{ selectedPolicy()!.endDate | date:'mediumDate' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Requirement 6: Active policy enforcement -->
+                                    @if (selectedPolicy()!.status !== 'Active') {
+                                        <div class="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold rounded-xl flex items-center gap-2">
+                                            <span class="material-icons text-sm">warning</span>
+                                            Claims can only be submitted for Active policies.
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- 2. Coverage Notice -->
+                                <div class="flex items-center justify-between px-1">
+                                    <div class="text-xs font-bold text-gray-500 italic">
+                                        Maximum claim allowed: <span class="text-gray-900">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</span>
+                                    </div>
+                                    
+                                    @if (isHighClaim()) {
+                                        <div class="text-[10px] font-bold text-amber-600 flex items-center gap-1 animate-pulse">
+                                            <span class="material-icons text-xs">info</span>
+                                            Claims above 80% of coverage may require additional review.
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Form Fields -->
+                            <div class="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Claim Amount (INR)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                        <input type="number" formControlName="claimAmount" class="input-field w-full pl-8" placeholder="0.00">
+                                    </div>
+                                    @if (claimForm.get('claimAmount')?.touched && claimForm.get('claimAmount')?.errors?.['max']) {
+                                        <p class="text-red-500 text-[10px] mt-1 font-bold">Cannot exceed coverage limit of {{ selectedPolicy()?.coverageAmount | currency:'INR' }}</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- 4. Live Claim Preview -->
+                            @if (selectedPolicy()) {
+                                <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                                    <div class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-3">Live Claim Preview</div>
+                                    <div class="flex items-center justify-between text-xs font-medium">
+                                        <div class="text-gray-500">Coverage: <span class="text-gray-900">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</span></div>
+                                        <div class="text-gray-500">Claim: <span class="text-blue-600 font-bold">-{{ claimForm.get('claimAmount')?.value | currency:'INR' }}</span></div>
+                                        <div class="text-gray-500">Remaining: <span [class]="remainingCoverage() < 0 ? 'text-red-600' : 'text-emerald-600 font-bold'">{{ remainingCoverage() | currency:'INR' }}</span></div>
+                                    </div>
+                                </div>
+                            }
+
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Reason for Claim</label>
+                                    <textarea formControlName="reason" rows="3" class="input-field w-full" placeholder="Provide a detailed description of the incident..."></textarea>
+                                    @if (claimForm.get('reason')?.touched && claimForm.get('reason')?.invalid) {
+                                        <p class="text-red-500 text-[10px] mt-1 font-bold">Reason required (min 10 chars)</p>
+                                    }
+                                </div>
+
+                                <!-- Supporting Documents -->
+                                <div class="p-5 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Supporting Documents</label>
+                                    <div class="flex items-center gap-4">
+                                        <label class="cursor-pointer bg-white px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-blue-600 hover:bg-blue-50 transition-colors">
+                                            <span class="flex items-center gap-2">
+                                                <span class="material-icons text-sm">upload_file</span>
+                                                Select Files
+                                            </span>
+                                            <input type="file" multiple (change)="onFileSelected($event)" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                                        </label>
+                                        <span class="text-[10px] text-gray-400 font-medium">PDF, JPG, PNG, DOC (Max 5MB)</span>
+                                    </div>
+
+                                    @if (selectedFiles().length > 0) {
+                                        <div class="mt-4 space-y-2">
+                                            @for (file of selectedFiles(); track $index; let i = $index) {
+                                                <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100 text-[11px]">
+                                                    <div class="flex items-center gap-2 text-gray-700 truncate">
+                                                        <span class="material-icons text-sm text-gray-400">description</span>
+                                                        <span class="truncate">{{ file.name }}</span>
+                                                        <span class="text-gray-400">({{ (file.size / 1024 / 1024) | number:'1.2-2' }} MB)</span>
+                                                    </div>
+                                                    <button type="button" (click)="removeFile(i)" class="text-red-400 hover:text-red-600">
+                                                        <span class="material-icons text-sm">cancel</span>
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+
+                            @if (errorMessage()) {
+                                <div class="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl font-medium">
+                                    {{ errorMessage() }}
+                                </div>
+                            }
+
+                            <div class="flex gap-4 pt-4">
+                                <button type="button" (click)="resetForm()" class="flex-1 btn-outline">Cancel</button>
+                                <button 
+                                    type="submit" 
+                                    [disabled]="claimForm.invalid || isSubmitting() || selectedPolicy()?.status !== 'Active'" 
+                                    class="flex-[2] btn-primary flex items-center justify-center gap-2"
+                                >
+                                    @if (isSubmitting()) { <span class="material-icons animate-spin">sync</span> }
+                                    {{ isSubmitting() ? (uploadProgress() || 'Submitting Claim...') : 'Proceed to Submit' }}
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 7. Confirmation Dialog Modal -->
+    @if (showConfirmDialog()) {
+        <div class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-gray-950/40 backdrop-blur-md animate-in fade-in transition-all">
+            <div class="bg-white w-full max-md rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div class="p-10 text-center">
+                    <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons !text-4xl">contact_support</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">Confirm Submission</h3>
+                    <p class="text-gray-500 text-sm mb-10 leading-relaxed">
+                        Are you sure you want to submit this claim for <span class="text-gray-900 font-bold">{{ claimForm.get('claimAmount')?.value | currency:'INR' }}</span>? 
+                        This action will initiate the review process.
+                    </p>
+                    <div class="flex gap-4">
+                        <button (click)="showConfirmDialog.set(false)" class="flex-1 btn-outline py-4 rounded-2xl">Cancel</button>
+                        <button (click)="confirmSubmit()" class="flex-1 btn-primary py-4 rounded-2xl shadow-xl shadow-blue-100">Yes, Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+        <div class="space-y-4">
+            @for (i of [1,2,3]; track i) {
+                <div class="h-24 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
+            }
+        </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading() && claims().length === 0) {
+        <div class="bg-white p-20 rounded-[2.5rem] border border-gray-200 text-center shadow-sm">
+            <div class="w-20 h-20 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-icons !text-5xl">inventory_2</span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">You have not submitted any claims yet.</h3>
+            <p class="text-gray-500 mb-8 max-w-sm mx-auto">Once you file a claim for any of your active policies, they will appear here for tracking.</p>
+            <button (click)="showForm.set(true)" class="btn-primary">File Your First Claim</button>
+        </div>
+    }
+
+    <!-- Claims List (Table-like Layout) -->
+    @if (!isLoading() && claims().length > 0) {
+        <div class="bg-white rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-100">
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Claim ID</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Policy</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Submitted</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Risk Level</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @for (claim of claims(); track claim.id) {
+                            <tr class="hover:bg-gray-50/50 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <span class="text-[10px] font-bold text-gray-400">#{{ claim.id.substring(0, 8).toUpperCase() }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 leading-tight">{{ claim.policyProductName }}</span>
+                                        <span class="text-[10px] text-gray-400 font-black tracking-widest">{{ claim.policyNumber }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-bold text-gray-900">{{ claim.claimAmount | currency:'INR' }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span [class]="'px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border inline-block ' + getStatusClass(claim.status)">
+                                        {{ claim.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-semibold text-gray-500">
+                                    {{ claim.createdAt | date:'dd MMM yyyy' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if (claim.aiRiskLevel) {
+                                        <span [class]="'px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md border ' + getRiskLevelClass(claim.aiRiskLevel)">
+                                            {{ claim.aiRiskLevel }}
+                                        </span>
+                                    } @else {
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Analyzing...</span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button (click)="viewDetails(claim)" class="text-gray-400 hover:text-blue-600 transition-colors">
+                                        <span class="material-icons">visibility</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- View Details Modal -->
+    @if (showDetailsModal() && selectedClaim()) {
+        <div class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-gray-950/40 backdrop-blur-md animate-in fade-in transition-all">
+            <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div class="p-10 lg:p-12">
+                    <div class="flex justify-between items-center mb-10">
+                        <div>
+                            <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Claim Details</div>
+                            <h3 class="text-2xl font-bold text-gray-900">Summary</h3>
+                        </div>
+                        <button (click)="closeDetailsModal()" class="p-2 text-gray-400 hover:text-gray-900 transition-colors">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Policy Number</div>
+                                <div class="text-lg font-bold text-gray-900">{{ selectedClaim()!.policyNumber }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount</div>
+                                <div class="text-lg font-bold text-emerald-600">{{ selectedClaim()!.claimAmount | currency:'INR' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Status</div>
+                                <span [class]="'px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border inline-block ' + getStatusClass(selectedClaim()!.status)">
+                                    {{ selectedClaim()!.status }}
+                                </span>
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Submitted On</div>
+                                <div class="text-lg font-bold text-gray-900">{{ selectedClaim()!.createdAt | date:'mediumDate' }}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Reason</div>
+                            <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-sm text-gray-600 leading-relaxed max-h-40 overflow-y-auto">
+                                {{ selectedClaim()!.reason }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Documents</div>
+                            @if (selectedClaim()!.documents && selectedClaim()!.documents.length > 0) {
+                                <div class="grid grid-cols-1 gap-3">
+                                    @for (doc of selectedClaim()!.documents; track $index; let i = $index) {
+                                        <a [href]="getDownloadUrl(doc.filePath)" target="_blank" class="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 flex items-center justify-between text-blue-700 transition-all">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-icons">attachment</span>
+                                                <div class="text-xs font-bold">{{ doc.fileName || 'Supporting Document ' + (i + 1) }}</div>
+                                            </div>
+                                            <span class="material-icons text-sm">open_in_new</span>
+                                        </a>
+                                    }
+                                </div>
+                            } @else {
+                                <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-center">
+                                    <span class="material-icons text-gray-300 mb-2">description</span>
+                                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-tight">No attached documents</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-12">
+                        <button (click)="closeDetailsModal()" class="w-full btn-primary py-4 rounded-2xl">Close Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

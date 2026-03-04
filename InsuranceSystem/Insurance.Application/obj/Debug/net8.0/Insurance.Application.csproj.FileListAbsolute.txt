@@ -13,3 +13,4 @@ C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Application\obj\Debug\
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Application\obj\Debug\net8.0\refint\Insurance.Application.dll
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Application\obj\Debug\net8.0\Insurance.Application.pdb
 C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Application\obj\Debug\net8.0\ref\Insurance.Application.dll
+C:\Users\Bhara\Desktop\Capstone\InsuranceSystem\Insurance.Application\obj\Debug\net8.0\Insurance.Application.sourcelink.json

@@ -1,0 +1,122 @@
+<div class="px-8 py-8 space-y-8 animate-in fade-in duration-500 font-sans leading-relaxed text-gray-700">
+  <!-- Title Section -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-800 tracking-normal">Agent Workspace</h1>
+      <p class="text-sm text-gray-500 mt-1">Operational overview of your assigned customers, applications, and policies.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="loadData()" 
+              class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Synchronize Workspace
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-50 shadow-sm">
+    <div class="w-10 h-10 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin"></div>
+    <p class="mt-4 text-sm text-gray-400 font-medium">Synthesizing data streams...</p>
+  </div>
+
+  <div *ngIf="!isLoading() && !errorMessage()" class="space-y-8 animate-in fade-in duration-700">
+    <!-- Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Customers</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ stats().totalCustomers }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide text-blue-600">Queue</p>
+        <h3 class="text-3xl font-bold text-blue-600 mt-2">{{ stats().totalApplications }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide text-green-600">Active</p>
+        <h3 class="text-3xl font-bold text-green-600 mt-2">{{ stats().activePolicies }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide text-amber-600">Drafts</p>
+        <h3 class="text-3xl font-bold text-amber-600 mt-2">{{ stats().draftPolicies }}</h3>
+      </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <!-- Recent Applications -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+          <h4 class="text-base font-semibold text-gray-800">New Applications</h4>
+          <a routerLink="/agent/applications" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Review Queue &rarr;</a>
+        </div>
+        <div class="overflow-x-auto text-sm">
+          <table class="w-full text-left">
+            <thead class="bg-white text-xs font-medium text-gray-400 uppercase tracking-wide border-b border-gray-50">
+              <tr>
+                <th class="px-6 py-4">Applicant</th>
+                <th class="px-6 py-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr *ngFor="let app of recentApplications()" class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="font-semibold text-gray-800">{{ app.customerName }}</span>
+                  <p class="text-[10px] text-gray-400 font-medium uppercase tracking-tighter mt-0.5">REF: {{ app.id.substring(0,8) }}</p>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-bold uppercase">{{ app.status }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="recentApplications().length === 0">
+                <td colspan="2" class="px-6 py-12 text-center text-gray-400 italic font-medium">No pending applications found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Policies -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+          <h4 class="text-base font-semibold text-gray-800">Latest Policies</h4>
+          <a routerLink="/agent/policies" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Manage All &rarr;</a>
+        </div>
+        <div class="overflow-x-auto text-sm">
+          <table class="w-full text-left">
+            <thead class="bg-white text-xs font-medium text-gray-400 uppercase tracking-wide border-b border-gray-50">
+              <tr>
+                <th class="px-6 py-4">Identity</th>
+                <th class="px-6 py-4 text-right">Coverage</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr *ngFor="let policy of recentPolicies()" class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="font-mono font-bold text-indigo-600 uppercase">{{ policy.policyNumber }}</span>
+                </td>
+                <td class="px-6 py-4 text-right text-sm font-bold text-gray-800">
+                  {{ policy.coverageAmount | currency }}
+                </td>
+              </tr>
+              <tr *ngIf="recentPolicies().length === 0">
+                <td colspan="2" class="px-6 py-12 text-center text-gray-400 italic font-medium">No policy records found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage()" class="bg-red-50 border border-red-100 p-6 rounded-2xl flex items-center gap-4 text-red-600 shadow-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span class="text-sm font-bold uppercase tracking-tight">{{ errorMessage() }}</span>
+  </div>
+</div>

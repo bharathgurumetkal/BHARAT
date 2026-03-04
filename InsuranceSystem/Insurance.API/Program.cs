@@ -23,7 +23,13 @@ namespace Insurance.API
             // -----------------------------
             // Add Controllers
             // -----------------------------
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Serialize enums as their string names (e.g. "Active" not 2)
+                    options.JsonSerializerOptions.Converters.Add(
+                        new System.Text.Json.Serialization.JsonStringEnumConverter());
+                });
 
             // -----------------------------
             // Database
@@ -31,6 +37,19 @@ namespace Insurance.API
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // -----------------------------
+            // CORS (allow the Angular dev server)
+            // -----------------------------
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngular", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             // -----------------------------
             // JWT Authentication
@@ -60,6 +79,31 @@ namespace Insurance.API
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IPolicyService, PolicyService>();
+            builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
+            builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+            builder.Services.AddScoped<IAgentRepository, AgentRepository>();
+            builder.Services.AddScoped<IClaimsOfficerRepository, ClaimsOfficerRepository>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+            builder.Services.AddScoped<IClaimService, ClaimService>();
+            builder.Services.AddScoped<IClaimRepository, ClaimRepository>();
+            builder.Services.AddScoped<IPolicyProductRepository, PolicyProductRepository>();
+            builder.Services.AddScoped<IPolicyProductService, PolicyProductService>();
+            builder.Services.AddScoped<IPolicyApplicationRepository, PolicyApplicationRepository>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>(); // Register Repository
+            builder.Services.AddScoped<ICommissionRepository, CommissionRepository>();
+            builder.Services.AddHttpClient("AiService", client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:5000/");
+            });
+            builder.Services.AddScoped<IAiClaimClient, AiClaimClient>();
+            builder.Services.AddScoped<IPolicyApplicationService, PolicyApplicationService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
 
             // -----------------------------
             // Swagger + JWT Support
@@ -105,6 +149,21 @@ namespace Insurance.API
             }
 
             app.UseHttpsRedirection();
+
+            // apply CORS policy defined earlier MUST BE BEFORE STATIC FILES
+            app.UseCors("AllowAngular");
+
+            // Serve static files from "uploads" folder
+            var uploadsDir = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+            if (!Directory.Exists(uploadsDir))
+            {
+                Directory.CreateDirectory(uploadsDir);
+            }
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsDir),
+                RequestPath = "/uploads"
+            });
 
             app.UseMiddleware<ExceptionMiddleware>();
 

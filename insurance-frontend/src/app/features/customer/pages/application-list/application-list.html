@@ -1,0 +1,77 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">My Applications</h1>
+        <p class="text-gray-500 font-medium">Track the status of your insurance policy applications.</p>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+        <div class="space-y-4">
+            @for (i of [1,2,3]; track i) {
+                <div class="h-28 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
+            }
+        </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading() && applications().length === 0) {
+        <div class="bg-white p-20 rounded-[2.5rem] border border-gray-200 text-center">
+            <div class="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-icons !text-4xl">description</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">No Applications Found</h3>
+            <p class="text-gray-500 mb-8">You haven't applied for any insurance products yet.</p>
+            <a routerLink="/customer/products" class="btn-primary">Browse Products</a>
+        </div>
+    }
+
+    <!-- Application List -->
+    @if (!isLoading() && applications().length > 0) {
+        <div class="grid gap-6">
+            @for (app of applications(); track app.id) {
+                <div class="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm hover:border-blue-100 transition-all">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div class="flex items-center gap-6">
+                            <div class="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center border border-gray-100">
+                                <span class="material-icons">article</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="text-lg font-bold text-gray-900">{{ app.productName }}</span>
+                                    <span [class]="'px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border ' + getStatusClass(app.status)">
+                                        {{ app.status }}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm font-medium text-gray-400">
+                                    <span class="flex items-center gap-1">
+                                        Market Value: <span class="text-gray-700">{{ app.marketValue | currency }}</span>
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        Submitted: <span class="text-gray-700">{{ app.submittedAt | date:'mediumDate' }}</span>
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        Monthly Premium: <span class="text-blue-600 font-bold">{{ app.calculatedPremium | currency }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col lg:items-end gap-1">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Detail</div>
+                            @if (app.status === 'Submitted') { <div class="text-sm font-semibold text-blue-600">Awaiting Agent Assignment</div> }
+                            @if (app.status === 'AssignedToAgent') { <div class="text-sm font-semibold text-purple-600">Under Review by Agent</div> }
+                            @if (app.status === 'ApprovedByAgent') { <div class="text-sm font-semibold text-emerald-600">Approve! Check Policies to Pay</div> }
+                            @if (app.status === 'RejectedByAgent') { <div class="text-sm font-semibold text-red-600">Application not successful</div> }
+                            
+                            @if (app.assignedAgentName) {
+                                <div class="text-[10px] text-gray-400 font-medium">
+                                    Agent: <span class="text-gray-600">{{ app.assignedAgentName }}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

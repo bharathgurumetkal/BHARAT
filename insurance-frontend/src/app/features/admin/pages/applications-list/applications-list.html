@@ -1,0 +1,334 @@
+<div class="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-900">Policy Applications</h2>
+      <p class="text-slate-500">Review and assign incoming customer applications to available agents.</p>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage()" class="bg-rose-50 border border-rose-100 text-rose-700 px-4 py-3 rounded-xl flex items-center gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+    </svg>
+    {{ errorMessage() }}
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6 text-sm">
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex gap-2 w-full sm:w-auto">
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" 
+                class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none w-full sm:w-48 text-slate-700">
+          <option value="">All Statuses</option>
+          <option value="Submitted">Submitted (Pending)</option>
+          <option value="AssignedToAgent">Assigned</option>
+          <option value="ApprovedByAgent">Approved</option>
+          <option value="RejectedByAgent">Rejected</option>
+        </select>
+      </div>
+      <div class="text-slate-400 font-medium">
+        Showing {{ filteredApps().length }} applications
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto rounded-xl border border-slate-50">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+          <tr>
+            <th class="px-6 py-4">Application details</th>
+            <th class="px-6 py-4">Customer</th>
+            <th class="px-6 py-4">Coverage & Location</th>
+            <th class="px-6 py-4">Status & Agent</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngIf="isLoading()" class="animate-pulse bg-slate-50/50">
+            <td colspan="5" class="px-6 py-8 text-center text-slate-400">Loading applications...</td>
+          </tr>
+          <tr *ngIf="!isLoading() && filteredApps().length === 0">
+            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+              <div class="flex flex-col items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <p>No applications match your criteria</p>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let app of filteredApps()" (click)="openDrawer(app)" class="hover:bg-slate-50/80 transition-colors group cursor-pointer">
+            <td class="px-6 py-4 align-top">
+              <p class="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{{ app.productName || 'Unknown Product' }}</p>
+              <p class="text-[10px] text-slate-400 font-mono mt-1 w-32 truncate" title="{{ app.id }}">{{ app.id }}</p>
+              <p class="text-[10px] text-slate-400 mt-2 font-medium bg-slate-100 inline-block px-2 py-0.5 rounded">{{ app.submittedAt | date:'mediumDate' }}</p>
+            </td>
+            <td class="px-6 py-4 align-top">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
+                  {{ app.customerName?.substring(0,1) || 'C' }}
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-800">{{ app.customerName || 'Unknown Customer' }}</p>
+                  <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ app.customerEmail }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 align-top">
+              <p class="font-bold text-emerald-600">${{ app.requestedCoverageAmount | number }}</p>
+              <p class="text-xs text-slate-500 font-medium mt-1">{{ app.propertySubCategory }}</p>
+              <div class="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="truncate w-32" title="{{ app.address }}">{{ app.address }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 align-top">
+              <div class="space-y-2 flex flex-col items-start">
+                <span [ngClass]="{
+                  'bg-blue-50 text-blue-600 border-blue-200': app.status === 'Submitted',
+                  'bg-amber-50 text-amber-600 border-amber-200': app.status === 'AssignedToAgent',
+                  'bg-emerald-50 text-emerald-600 border-emerald-200': app.status === 'ApprovedByAgent',
+                  'bg-rose-50 text-rose-600 border-rose-200': app.status === 'RejectedByAgent'
+                }" class="px-3 py-1 bg-slate-50 text-slate-600 border border-slate-200 rounded-full text-[10px] font-bold uppercase tracking-wide inline-flex items-center gap-1.5">
+                  <div *ngIf="app.status === 'Submitted'" class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                  {{ app.status?.replace('ByAgent', '') || 'Pending' }}
+                </span>
+                
+                <div *ngIf="app.assignedAgentId" class="flex items-center gap-1.5 mt-2 bg-slate-100 px-2.5 py-1 rounded-md">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  <span class="text-[11px] font-medium text-slate-600 truncate max-w-[100px]" title="{{ app.assignedAgentName || app.assignedAgentId }}">
+                    {{ app.assignedAgentName || app.assignedAgentId }}
+                  </span>
+                </div>
+                <div *ngIf="!app.assignedAgentId" class="text-[11px] text-slate-400 italic mt-2">Unassigned</div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right align-top">
+              <button *ngIf="app.status === 'Submitted'" (click)="$event.stopPropagation(); openAssignModal(app)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-colors">
+                Assign Agent
+              </button>
+              <button *ngIf="app.status !== 'Submitted'" (click)="$event.stopPropagation(); openAssignModal(app)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:bg-slate-100 rounded-lg text-xs font-bold transition-colors">
+                Reassign
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Assign Agent Modal -->
+  <div *ngIf="showAssignModal()" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div (click)="closeModal()" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-indigo-600 text-white">
+        <h3 class="text-xl font-bold">Assign to Agent</h3>
+        <button (click)="closeModal()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Success State -->
+      <div *ngIf="successMessage()" class="p-8 flex flex-col items-center justify-center gap-4 min-h-[220px]">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <h4 class="text-lg font-bold text-slate-900">Assignment Confirmed!</h4>
+        <p class="text-slate-500 text-sm text-center">{{ successMessage() }}</p>
+      </div>
+
+      <div *ngIf="!successMessage() && selectedApp()" class="p-8 space-y-6">
+        <!-- App Details Summary -->
+        <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50">
+          <div class="flex justify-between items-start mb-2">
+            <p class="font-bold text-slate-900">{{ selectedApp()!.customerName || 'Customer' }}</p>
+            <p class="text-xs font-bold text-emerald-600">${{ selectedApp()!.requestedCoverageAmount | number }} Coverage</p>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">{{ selectedApp()!.productName }}</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Field Representative</label>
+          <div class="relative">
+            <!-- IMPORTANT: binding value to agent.user?.id because that's what backend expects -->
+            <select [ngModel]="selectedAgentId()" (ngModelChange)="selectedAgentId.set($event)" 
+                    class="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none appearance-none text-slate-700 font-medium">
+              <option value="">Select an agent from the roster...</option>
+              <option *ngFor="let agent of agents()" [value]="agent.userId">
+                {{ agent.user?.name || agent.id }} — {{ agent.licenseNumber }}
+              </option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <button (click)="confirmAssignment()" 
+                [disabled]="isAssigning() || !selectedAgentId() || selectedAgentId() === selectedApp()?.assignedAgentId"
+                class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
+          <span *ngIf="!isAssigning()">Confirm Assignment</span>
+          <div *ngIf="isAssigning()" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Drawer overlay -->
+  <div *ngIf="showDrawer()" (click)="closeDrawer()" class="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-opacity"></div>
+  
+  <!-- Right Drawer -->
+  <div class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] bg-white shadow-2xl border-l border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col"
+       [class.translate-x-full]="!showDrawer()" 
+       [class.translate-x-0]="showDrawer()">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+      <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Application Details
+      </h3>
+      <button (click)="closeDrawer()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Drawer Content -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-8" *ngIf="drawerApp()">
+      
+      <!-- Section 1: Application Info -->
+      <section>
+        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          Application Info
+        </h4>
+        <div class="bg-slate-50/50 rounded-2xl border border-slate-100 p-5 space-y-4">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Application ID</p>
+            <p class="font-mono text-sm text-slate-900">{{ drawerApp()!.id }}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status</p>
+              <span class="inline-flex px-2 py-0.5 rounded text-xs font-bold"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-700': drawerApp()!.status === 'Submitted',
+                  'bg-amber-100 text-amber-700': drawerApp()!.status === 'AssignedToAgent',
+                  'bg-emerald-100 text-emerald-700': drawerApp()!.status === 'ApprovedByAgent',
+                  'bg-rose-100 text-rose-700': drawerApp()!.status === 'RejectedByAgent'
+                }">
+                {{ drawerApp()!.status?.replace('ByAgent', '') || 'Pending' }}
+              </span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 pt-2 mt-2 border-t border-slate-100">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Requested Coverage</p>
+              <p class="text-base font-bold text-emerald-600">${{ drawerApp()!.requestedCoverageAmount | number }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Calculated Premium</p>
+              <p class="text-base font-bold text-slate-900">${{ drawerApp()!.calculatedPremium | number }} / yr</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Customer Info -->
+      <section>
+        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          Customer Info
+        </h4>
+        <div class="bg-slate-50/50 rounded-2xl border border-slate-100 p-5 space-y-4">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Full Name</p>
+            <p class="font-medium text-slate-900">{{ drawerApp()!.customerName }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Email Address</p>
+            <p class="font-medium text-slate-600">{{ drawerApp()!.customerEmail }}</p>
+          </div>
+          <div class="pt-2 mt-2 border-t border-slate-100">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Assigned Agent</p>
+            <div *ngIf="drawerApp()!.assignedAgentName" class="flex items-center gap-2 mt-1">
+              <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                {{ drawerApp()!.assignedAgentName.substring(0,1) }}
+              </div>
+              <p class="font-medium text-slate-900 text-sm">{{ drawerApp()!.assignedAgentName }}</p>
+            </div>
+            <p *ngIf="!drawerApp()!.assignedAgentName" class="text-sm text-slate-500 italic">No agent assigned</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Property Info -->
+      <section>
+        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          Property Info
+        </h4>
+        <div class="bg-slate-50/50 rounded-2xl border border-slate-100 p-5 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Category</p>
+              <p class="text-sm font-medium text-slate-900">{{ drawerApp()!.productName }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Subcategory</p>
+              <p class="text-sm font-medium text-slate-900">{{ drawerApp()!.propertySubCategory }}</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Address</p>
+            <p class="text-sm font-medium text-slate-600">{{ drawerApp()!.address }}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 pt-2 mt-2 border-t border-slate-100">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Built Year</p>
+              <p class="text-sm font-medium text-slate-900">{{ drawerApp()!.yearBuilt }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Market Value</p>
+              <p class="text-sm font-medium text-slate-900">${{ drawerApp()!.marketValue | number }}</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 pt-2 mt-2 border-t border-slate-100">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Risk Zone</p>
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold"
+                [ngClass]="{
+                  'bg-emerald-100 text-emerald-700': drawerApp()!.riskZone === 'Low',
+                  'bg-amber-100 text-amber-700': drawerApp()!.riskZone === 'Medium',
+                  'bg-rose-100 text-rose-700': drawerApp()!.riskZone === 'High'
+                }">
+                {{ drawerApp()!.riskZone }} Risk
+              </span>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Security</p>
+              <div class="flex items-center gap-1.5 text-sm" [ngClass]="drawerApp()!.hasSecuritySystem ? 'text-emerald-600' : 'text-slate-500'">
+                <span class="material-icons text-[16px]">{{ drawerApp()!.hasSecuritySystem ? 'verified_user' : 'gpp_bad' }}</span>
+                {{ drawerApp()!.hasSecuritySystem ? 'Installed' : 'None' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </div>
+  </div>
+</div>

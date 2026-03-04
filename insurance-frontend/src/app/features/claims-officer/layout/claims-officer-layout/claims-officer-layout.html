@@ -1,0 +1,17 @@
+<div class="h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden flex">
+  <app-claims-officer-sidebar class="shrink-0"></app-claims-officer-sidebar>
+  
+  <div class="flex-1 flex flex-col h-screen transition-all duration-300 ml-[260px] overflow-hidden">
+    <app-claims-officer-topbar class="shrink-0"></app-claims-officer-topbar>
+    
+    <main class="flex-1 p-8 mt-20 overflow-y-auto">
+      <div class="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+    
+    <footer class="p-6 border-t border-slate-200 text-center text-sm text-slate-500 shrink-0 bg-white">
+      &copy; 2026 PropertyTrust Claims Center • Enterprise Settlement Systems
+    </footer>
+  </div>
+</div>

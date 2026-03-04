@@ -1,0 +1,185 @@
+<div class="px-8 py-8 space-y-8 animate-in fade-in duration-500">
+
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <div class="flex items-start justify-between">
+    <div>
+      <div class="comm-eyebrow">
+        <span class="material-icons" style="font-size:13px;">monetization_on</span>
+        Earnings
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900 tracking-tight">My Commissions</h1>
+      <p class="text-sm text-gray-400 mt-1">
+        Commission earned from policies you approved and activated.
+      </p>
+    </div>
+    <button (click)="loadCommissions()"
+      class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
+      <span class="material-icons" style="font-size:17px;">refresh</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- ── Summary Cards ────────────────────────────────────────────────── -->
+  @if (!isLoading()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <!-- Total Earned -->
+      <div class="comm-stat-card comm-stat-blue">
+        <div class="comm-stat-icon">
+          <span class="material-icons">account_balance_wallet</span>
+        </div>
+        <div>
+          <div class="comm-stat-label">Total Earned</div>
+          <div class="comm-stat-value">{{ totalEarned() | currency:'USD':'symbol':'1.2-2' }}</div>
+          <div class="comm-stat-sub">{{ commissions().length }} commission{{ commissions().length !== 1 ? 's' : '' }}</div>
+        </div>
+      </div>
+
+      <!-- Pending -->
+      <div class="comm-stat-card comm-stat-amber">
+        <div class="comm-stat-icon">
+          <span class="material-icons">pending_actions</span>
+        </div>
+        <div>
+          <div class="comm-stat-label">Pending Payout</div>
+          <div class="comm-stat-value">{{ pendingAmount() | currency:'USD':'symbol':'1.2-2' }}</div>
+          <div class="comm-stat-sub">{{ pendingCount() }} unpaid</div>
+        </div>
+      </div>
+
+      <!-- Paid -->
+      <div class="comm-stat-card comm-stat-green">
+        <div class="comm-stat-icon">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <div>
+          <div class="comm-stat-label">Paid Out</div>
+          <div class="comm-stat-value">{{ paidAmount() | currency:'USD':'symbol':'1.2-2' }}</div>
+          <div class="comm-stat-sub">{{ paidCount() }} settled</div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div class="w-10 h-10 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-400 font-medium">Loading commissions...</p>
+    </div>
+  }
+
+  <!-- ── Empty State ──────────────────────────────────────────────────── -->
+  @if (!isLoading() && commissions().length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
+      <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+        <span class="material-icons text-gray-300" style="font-size:40px;">monetization_on</span>
+      </div>
+      <h3 class="text-lg font-bold text-gray-700 mb-1">No Commissions Yet</h3>
+      <p class="text-sm text-gray-400 max-w-xs">
+        Commissions are generated when a customer pays their premium for a policy you approved.
+      </p>
+    </div>
+  }
+
+  <!-- ── Commission Table ─────────────────────────────────────────────── -->
+  @if (!isLoading() && commissions().length > 0) {
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              <th class="comm-th">Policy</th>
+              <th class="comm-th">Customer</th>
+              <th class="comm-th text-right">Premium</th>
+              <th class="comm-th text-center">Rate</th>
+              <th class="comm-th text-right">Commission</th>
+              <th class="comm-th text-center">Status</th>
+              <th class="comm-th text-right">Earned On</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (c of commissions(); track c.id) {
+              <tr class="hover:bg-gray-50/70 transition-colors group">
+
+                <!-- Policy Number -->
+                <td class="comm-td">
+                  <span class="font-mono font-bold text-blue-600 text-xs uppercase tracking-tight">
+                    {{ c.policyNumber }}
+                  </span>
+                </td>
+
+                <!-- Customer Name -->
+                <td class="comm-td">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs flex-shrink-0">
+                      {{ c.customerName ? c.customerName.charAt(0).toUpperCase() : '?' }}
+                    </div>
+                    <span class="font-semibold text-gray-800">{{ c.customerName }}</span>
+                  </div>
+                </td>
+
+                <!-- Premium -->
+                <td class="comm-td text-right">
+                  <span class="font-semibold text-gray-700">{{ c.premium | currency:'USD':'symbol':'1.0-0' }}</span>
+                </td>
+
+                <!-- Commission Rate -->
+                <td class="comm-td text-center">
+                  <span class="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 font-bold text-xs rounded-full px-2.5 py-1 border border-indigo-100">
+                    {{ (c.commissionRate * 100) | number:'1.0-0' }}%
+                  </span>
+                </td>
+
+                <!-- Commission Amount -->
+                <td class="comm-td text-right">
+                  <span class="font-black text-gray-900 text-base">
+                    {{ c.commissionAmount | currency:'USD':'symbol':'1.2-2' }}
+                  </span>
+                </td>
+
+                <!-- Status Badge -->
+                <td class="comm-td text-center">
+                  @if (c.isPaid) {
+                    <span class="comm-badge-paid">
+                      <span class="material-icons" style="font-size:12px;">check</span>
+                      Paid
+                    </span>
+                  } @else {
+                    <span class="comm-badge-pending">
+                      <span class="material-icons" style="font-size:12px;">schedule</span>
+                      Pending
+                    </span>
+                  }
+                </td>
+
+                <!-- Earned Date -->
+                <td class="comm-td text-right">
+                  <span class="text-xs text-gray-500 font-medium">
+                    {{ c.createdAt | date:'d MMM y' }}
+                  </span>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+
+          <!-- Table Footer Summary -->
+          <tfoot class="bg-gray-50 border-t border-gray-200">
+            <tr>
+              <td colspan="4" class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                {{ commissions().length }} Total Records
+              </td>
+              <td class="px-6 py-4 text-right font-black text-gray-900">
+                {{ totalEarned() | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>

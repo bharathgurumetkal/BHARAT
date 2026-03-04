@@ -1,0 +1,125 @@
+/* ── Commissions Page ─────────────────────────────────────── */
+
+.comm-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: #1d4ed8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid #bfdbfe;
+  margin-bottom: 8px;
+}
+
+/* ── Summary Stat Cards ──────────────────────────────────── */
+.comm-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px solid;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comm-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.comm-stat-blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #bfdbfe;
+}
+.comm-stat-amber {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fde68a;
+}
+.comm-stat-green {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #bbf7d0;
+}
+
+.comm-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.comm-stat-blue .comm-stat-icon { background: #dbeafe; color: #1d4ed8; }
+.comm-stat-amber .comm-stat-icon { background: #fde68a; color: #92400e; }
+.comm-stat-green .comm-stat-icon { background: #bbf7d0; color: #15803d; }
+.comm-stat-icon .material-icons { font-size: 24px; }
+
+.comm-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.comm-stat-value {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  line-height: 1;
+}
+.comm-stat-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* ── Table ───────────────────────────────────────────────── */
+.comm-th {
+  padding: 14px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.comm-td {
+  padding: 16px 20px;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* ── Status Badges ───────────────────────────────────────── */
+.comm-badge-paid,
+.comm-badge-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.comm-badge-paid {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.comm-badge-pending {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}

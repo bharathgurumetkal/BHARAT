@@ -1,0 +1,47 @@
+<aside class="fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-slate-200 z-50 flex flex-col transition-all duration-300">
+  <!-- Logo -->
+  <div class="h-20 flex items-center px-8 border-b border-slate-50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">PropertyTrust</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+    <div class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Main Menu</div>
+    
+    <a *ngFor="let item of menuItems" 
+       [routerLink]="item.route" 
+       [ngClass]="isActive(item.route)
+         ? 'bg-blue-50 text-blue-600 border-blue-500 shadow-sm'
+         : 'text-slate-600 border-transparent hover:bg-slate-50 hover:text-slate-900'"
+       class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group border-l-4">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           [ngClass]="isActive(item.route) ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'"
+           class="h-5 w-5 transition-colors duration-200 flex-shrink-0" 
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.icon" />
+      </svg>
+      <span class="font-medium text-[0.9375rem]">{{item.label}}</span>
+      <span *ngIf="isActive(item.route)" class="ml-auto w-2 h-2 rounded-full bg-blue-500"></span>
+    </a>
+  </nav>
+
+  <!-- Bottom section / Profile -->
+  <div class="p-4 border-t border-slate-100">
+    <div class="bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-blue-700 font-bold text-sm uppercase">
+        {{ userName.charAt(0) }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-slate-900 truncate uppercase">{{ userName }}</p>
+        <p class="text-xs text-slate-500 truncate">{{ userEmail }}</p>
+      </div>
+    </div>
+  </div>
+</aside>

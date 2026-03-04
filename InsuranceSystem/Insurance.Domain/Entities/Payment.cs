@@ -14,5 +14,7 @@ namespace Insurance.Domain.Entities
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
         public string Status { get; set; } = default!;
+
+        public Policy Policy { get; set; } = default!;
     }
 }

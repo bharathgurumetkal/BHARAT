@@ -1,0 +1,112 @@
+<div class="px-8 py-8 space-y-8 animate-in fade-in duration-500 font-sans leading-relaxed text-gray-700">
+  <!-- Title Section -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-800 tracking-normal">Claims Workspace</h1>
+      <p class="text-sm text-gray-500 mt-1">Review, approve, and settle claims across the platform.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="loadData()" 
+              class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Synchronize
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20">
+    <div class="w-10 h-10 border-4 border-gray-100 border-t-indigo-600 rounded-full animate-spin"></div>
+    <p class="mt-4 text-sm text-gray-400 font-medium">Aggregating records...</p>
+  </div>
+
+  <div *ngIf="!isLoading() && !errorMessage()" class="space-y-8 animate-in fade-in duration-700">
+    <!-- Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md group">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Total</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ stats().total }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">New</p>
+        <h3 class="text-3xl font-bold text-blue-600 mt-2">{{ stats().submitted }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Reviewing</p>
+        <h3 class="text-3xl font-bold text-amber-600 mt-2">{{ stats().underReview }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Approved</p>
+        <h3 class="text-3xl font-bold text-green-600 mt-2">{{ stats().approved }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Rejected</p>
+        <h3 class="text-3xl font-bold text-red-600 mt-2">{{ stats().rejected }}</h3>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Settled</p>
+        <h3 class="text-3xl font-bold text-emerald-600 mt-2">{{ stats().settled }}</h3>
+      </div>
+
+    </div>
+
+    <!-- Recent Table -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="px-6 py-5 border-b border-gray-50 flex justify-between items-center">
+        <h4 class="text-base font-semibold text-gray-800">Recent Activity</h4>
+        <a routerLink="/claims-officer/claims" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">View All &rarr;</a>
+      </div>
+      <div class="overflow-x-auto text-sm text-gray-700">
+        <table class="w-full text-left">
+          <thead class="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
+            <tr>
+              <th class="px-6 py-4">Reference</th>
+              <th class="px-6 py-4">Customer</th>
+              <th class="px-6 py-4">Value</th>
+              <th class="px-6 py-4 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr *ngFor="let claim of recentClaims()" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="font-mono font-medium text-indigo-600 uppercase">CLM-{{ claim.id.substring(0,8) }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="font-semibold text-gray-800">{{ claim.customerName }}</span>
+              </td>
+              <td class="px-6 py-4 font-bold text-gray-900">{{ claim.claimAmount | currency }}</td>
+              <td class="px-6 py-4 text-right">
+                <span [class]="
+                  claim.status === 'Submitted' ? 'bg-gray-100 text-gray-700' :
+                  claim.status === 'UnderReview' ? 'bg-blue-100 text-blue-700' :
+                  claim.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                  claim.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                  'bg-emerald-100 text-emerald-700'" 
+                  class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                  {{ claim.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="recentClaims().length === 0">
+              <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">No claims processed recently.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage()" class="bg-red-50 border border-red-100 p-6 rounded-2xl flex items-center gap-4 text-red-600 shadow-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span class="text-sm font-bold uppercase tracking-tight">{{ errorMessage() }}</span>
+  </div>
+</div>

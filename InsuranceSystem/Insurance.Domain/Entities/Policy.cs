@@ -21,5 +21,13 @@ namespace Insurance.Domain.Entities
 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public Guid CreatedByAdminId { get; set; }
+
+        // Optional: linked from PolicyApplication approval flow
+        public Guid? ApplicationId { get; set; }
+
+        public Customer Customer { get; set; } = default!;
+        public Property Property { get; set; } = default!;
+        public PolicyApplication? Application { get; set; }
     }
 }
