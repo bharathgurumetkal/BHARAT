@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthApiService } from '../../../auth/services/auth-api.service';
@@ -21,12 +21,14 @@ export class AdminTopbarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthApiService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     setInterval(() => {
       this.currentTime = new Date();
+      this.cdr.detectChanges();
     }, 1000);
 
     this.fetchNotifications();
@@ -42,15 +44,18 @@ export class AdminTopbarComponent implements OnInit, OnDestroy {
   fetchNotifications(): void {
     this.notificationService.getUnreadCount().subscribe(res => {
       this.unreadCount = res.count;
+      this.cdr.detectChanges();
     });
 
     this.notificationService.getNotifications().subscribe(data => {
       this.latestNotifications = data.slice(0, 5);
+      this.cdr.detectChanges();
     });
   }
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
+    this.cdr.detectChanges();
   }
 
   markAsRead(id: string, event: Event): void {

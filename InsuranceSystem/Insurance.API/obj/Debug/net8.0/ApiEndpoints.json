@@ -125,6 +125,37 @@
   },
   {
     "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "AssignOfficerToClaim",
+    "RelativePath": "api/Admin/assign-officer-to-claim/{claimId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "claimId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Insurance.Application.DTOs.Claim.AssignOfficerToClaimDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAllClaims",
+    "RelativePath": "api/Admin/claims",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
     "Method": "ClaimsReport",
     "RelativePath": "api/Admin/claims-report",
     "HttpMethod": "GET",
@@ -373,8 +404,8 @@
   },
   {
     "ContainingType": "Insurance.API.Controllers.ClaimsOfficerController",
-    "Method": "GetPolicies",
-    "RelativePath": "api/ClaimsOfficer/policies",
+    "Method": "GetDashboardSummary",
+    "RelativePath": "api/ClaimsOfficer/dashboard-summary",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

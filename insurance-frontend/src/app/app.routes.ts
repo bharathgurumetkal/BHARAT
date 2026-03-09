@@ -29,6 +29,7 @@ import { PoliciesListComponent } from './features/admin/pages/policies-list/poli
 import { AgentLayoutComponent } from './features/agent/layout/agent-layout/agent-layout';
 import { NotificationsPageComponent } from './features/notifications/notifications.page';
 import { AgentCommissionsComponent } from './features/agent/pages/commissions/commissions';
+import { AdminClaimsComponent } from './features/admin/pages/admin-claims/admin-claims';
 
 // Error pages
 import { NotFoundComponent } from './shared/pages/errors/not-found/not-found.component';
@@ -69,6 +70,7 @@ export const routes: Routes = [
         { path: 'products', component: ProductManagementComponent },
         { path: 'applications', component: ApplicationsListComponent },
         { path: 'policies', component: PoliciesListComponent },
+        { path: 'claims', component: AdminClaimsComponent },
         { path: 'notifications', component: NotificationsPageComponent }
     ]
   },

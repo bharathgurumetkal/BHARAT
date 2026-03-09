@@ -103,9 +103,6 @@ export class ProductListComponent implements OnInit {
     this.selectedProduct.set(product);
     this.successMessage.set(null);
     this.errorMessage.set(null);
-    this.applicationForm.patchValue({
-      requestedCoverageAmount: product.maxCoverageAmount / 2
-    });
   }
 
   onSubmit(): void {

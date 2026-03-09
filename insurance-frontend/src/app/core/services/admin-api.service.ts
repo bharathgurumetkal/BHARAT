@@ -77,4 +77,16 @@ export class AdminApiService {
   getAgentPerformanceAnalytics(): Observable<AgentPerformanceAnalytics[]> {
     return this.http.get<AgentPerformanceAnalytics[]>(`${this.apiUrl}/agent-performance-analytics`);
   }
+
+  getAllClaims(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/claims-report`);
+  }
+
+  getAdminClaims(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/claims`);
+  }
+
+  assignOfficerToClaim(claimId: string, officerUserId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/assign-officer-to-claim/${claimId}`, { officerUserId });
+  }
 }

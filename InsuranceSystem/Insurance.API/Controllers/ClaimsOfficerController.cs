@@ -1,6 +1,7 @@
 ﻿using Insurance.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Insurance.API.Controllers;
 
@@ -16,18 +17,26 @@ public class ClaimsOfficerController : ControllerBase
         _claimService = claimService;
     }
 
+    /// <summary>
+    /// Returns only the claims assigned to the currently logged-in officer.
+    /// </summary>
     [HttpGet("claims")]
     public async Task<IActionResult> GetClaims()
     {
-        var claims = await _claimService.GetAllClaimsAsync();
+        var officerUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var claims = await _claimService.GetClaimsByOfficerAsync(officerUserId);
         return Ok(claims);
     }
 
-    [HttpGet("policies")]
-    public async Task<IActionResult> GetPolicies([FromServices] IPolicyService policyService)
+    /// <summary>
+    /// Dashboard summary — counts only this officer's assigned claims.
+    /// </summary>
+    [HttpGet("dashboard-summary")]
+    public async Task<IActionResult> GetDashboardSummary()
     {
-        var policies = await policyService.GetAllPoliciesAsync();
-        return Ok(policies);
+        var officerUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var summary = await _claimService.GetClaimsOfficerDashboardSummaryAsync(officerUserId);
+        return Ok(summary);
     }
 
     /// <summary>

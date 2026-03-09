@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthApiService } from '../../../features/auth/services/auth-api.service';
 import { Router, RouterModule } from '@angular/router';
@@ -24,7 +24,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthApiService, 
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -46,15 +47,18 @@ export class TopbarComponent implements OnInit, OnDestroy {
   fetchNotifications(): void {
     this.notificationService.getUnreadCount().subscribe(res => {
       this.unreadCount.set(res.count);
+      this.cdr.detectChanges();
     });
 
     this.notificationService.getNotifications().subscribe(data => {
       this.latestNotifications.set(data.slice(0, 5));
+      this.cdr.detectChanges();
     });
   }
 
   toggleNotifications(): void {
     this.showNotifications.update(v => !v);
+    this.cdr.detectChanges();
   }
 
   markAsRead(id: string, event: Event): void {

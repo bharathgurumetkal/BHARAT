@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.application\\services\\claimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|solutionrelative:insurance.application\\services\\claimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.application\\interfaces\\iclaimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|solutionrelative:insurance.application\\interfaces\\iclaimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|solutionrelative:insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -82,7 +90,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -90,15 +98,44 @@
             },
             {
               "$type": "Bookmark",
+              "Name": "ST:0:0:{e506b91c-c606-466a-90a9-123d1d1e12b3}"
+            },
+            {
+              "$type": "Bookmark",
               "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{e506b91c-c606-466a-90a9-123d1d1e12b3}"
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ClaimService.cs",
+              "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Services\\ClaimService.cs",
+              "RelativeDocumentMoniker": "Insurance.Application\\Services\\ClaimService.cs",
+              "ToolTip": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Services\\ClaimService.cs",
+              "RelativeToolTip": "Insurance.Application\\Services\\ClaimService.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAqwCsAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-05T00:33:29.312Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "IClaimService.cs",
+              "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Interfaces\\IClaimService.cs",
+              "RelativeDocumentMoniker": "Insurance.Application\\Interfaces\\IClaimService.cs",
+              "ToolTip": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Interfaces\\IClaimService.cs",
+              "RelativeToolTip": "Insurance.Application\\Interfaces\\IClaimService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-05T00:33:27.772Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "Property.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Entities\\Property.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Entities\\Property.cs",
@@ -110,7 +147,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Entities\\User.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Entities\\User.cs",
@@ -122,7 +159,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Agent.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Entities\\Agent.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Entities\\Agent.cs",
@@ -134,7 +171,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "CustomerController.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Controllers\\CustomerController.cs",
               "RelativeDocumentMoniker": "Insurance.API\\Controllers\\CustomerController.cs",
@@ -146,7 +183,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 10,
               "Title": "PolicyService.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Services\\PolicyService.cs",
               "RelativeDocumentMoniker": "Insurance.Application\\Services\\PolicyService.cs",
@@ -158,20 +195,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
               "RelativeDocumentMoniker": "Insurance.API\\Program.cs",
               "ToolTip": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
               "RelativeToolTip": "Insurance.API\\Program.cs",
-              "ViewState": "AgIAAFUAAAAAAAAAAAAQwF4AAAA7AAAAAAAAAA==",
+              "ViewState": "AgIAAF4AAAAAAAAAAAAQwF4AAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-24T17:03:23.702Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-24T17:03:23.702Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "AdminController.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Controllers\\AdminController.cs",
               "RelativeDocumentMoniker": "Insurance.API\\Controllers\\AdminController.cs",
@@ -183,7 +219,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "AgentController.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Controllers\\AgentController.cs",
               "RelativeDocumentMoniker": "Insurance.API\\Controllers\\AgentController.cs",
@@ -195,7 +231,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 8,
               "Title": "RoleType.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Enums\\RoleType.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Enums\\RoleType.cs",
@@ -207,7 +243,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 11,
               "Title": "IPolicyRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Interfaces\\IPolicyRepository.cs",
               "RelativeDocumentMoniker": "Insurance.Application\\Interfaces\\IPolicyRepository.cs",
@@ -219,7 +255,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "20260225115439_AdminCreatesPolicy.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Infrastructure\\Migrations\\20260225115439_AdminCreatesPolicy.cs",
               "RelativeDocumentMoniker": "Insurance.Infrastructure\\Migrations\\20260225115439_AdminCreatesPolicy.cs",
@@ -231,7 +267,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 12,
               "Title": "Policy.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Entities\\Policy.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Entities\\Policy.cs",
@@ -243,7 +279,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 16,
               "Title": "dbo.Policies.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Policies.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Policies.sql",
@@ -252,7 +288,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 17,
               "Title": "PaymentService.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Services\\PaymentService.cs",
               "RelativeDocumentMoniker": "Insurance.Application\\Services\\PaymentService.cs",
@@ -264,7 +300,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 18,
               "Title": "Payment.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Domain\\Entities\\Payment.cs",
               "RelativeDocumentMoniker": "Insurance.Domain\\Entities\\Payment.cs",
@@ -276,7 +312,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 14,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Infrastructure\\Data\\AppDbContext.cs",
               "RelativeDocumentMoniker": "Insurance.Infrastructure\\Data\\AppDbContext.cs",
@@ -288,7 +324,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 15,
               "Title": "dbo.ClaimsOfficers.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.ClaimsOfficers.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.ClaimsOfficers.sql",
@@ -297,7 +333,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "dbo.Agents.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Agents.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Agents.sql",
@@ -306,16 +342,12 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 19,
               "Title": "dbo.Customers.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Customers.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/InsuranceDb/True/SqlTable/dbo.Customers.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
               "WhenOpened": "2026-02-24T16:47:51.335Z"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
             }
           ]
         }

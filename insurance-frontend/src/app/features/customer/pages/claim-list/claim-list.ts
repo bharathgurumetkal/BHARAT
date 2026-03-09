@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CustomerApiService } from '../../../../core/services/customer-api.service';
 import { CloudinaryUploadService } from '../../../../core/services/cloudinary-upload.service';
@@ -32,18 +32,36 @@ export class ClaimListComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   uploadProgress = signal<string | null>(null);
 
+  currentClaimAmount = signal(0);
+
+  /**
+   * Calculates the available coverage for the selected policy
+   * by subtracting all non-rejected existing claims.
+   */
+  availableCoverage = computed(() => {
+    const policy = this.selectedPolicy();
+    if (!policy) return 0;
+    
+    const utilized = this.claims()
+      .filter(c => c.policyId === policy.id && c.status !== 'Rejected')
+      .reduce((sum, c) => sum + (c.claimAmount || 0), 0);
+      
+    return Math.max(0, policy.coverageAmount - utilized);
+  });
+
   isHighClaim = computed(() => {
     const policy = this.selectedPolicy();
     if (!policy) return false;
-    const amount = this.claimForm.get('claimAmount')?.value || 0;
+    const amount = this.currentClaimAmount();
+    // High claim is > 80% of the total policy coverage
     return amount > (policy.coverageAmount * 0.8);
   });
 
   remainingCoverage = computed(() => {
-    const policy = this.selectedPolicy();
-    if (!policy) return 0;
-    const amount = this.claimForm.get('claimAmount')?.value || 0;
-    return Math.max(0, policy.coverageAmount - amount);
+    const available = this.availableCoverage();
+    const current = this.currentClaimAmount();
+    // Allow negative value here so the UI can show it in red if exceeded
+    return available - current;
   });
 
   constructor(
@@ -60,6 +78,16 @@ export class ClaimListComponent implements OnInit {
     // Watch for policy selection changes
     this.claimForm.get('policyId')?.valueChanges.subscribe(id => {
       this.selectedPolicy.set(this.allPolicies().find(p => p.id === id) || null);
+      // Validator update is now handled by an effect reacting to selectedPolicy and claims
+    });
+
+    // Sync form value to signal for reactivity in computed properties
+    this.claimForm.get('claimAmount')?.valueChanges.subscribe(val => {
+      this.currentClaimAmount.set(val || 0);
+    });
+
+    // effect to handle validator updates reactively
+    effect(() => {
       this.updateValidators();
     });
   }
@@ -71,16 +99,21 @@ export class ClaimListComponent implements OnInit {
 
   private updateValidators(): void {
     const policy = this.selectedPolicy();
-    if (policy) {
-      this.claimForm.get('claimAmount')?.setValidators([
-        Validators.required, 
-        Validators.min(1), 
-        Validators.max(policy.coverageAmount)
-      ]);
-    } else {
-      this.claimForm.get('claimAmount')?.setValidators([Validators.required, Validators.min(1)]);
+    const available = this.availableCoverage();
+    const amountControl = this.claimForm.get('claimAmount');
+
+    if (amountControl) {
+      if (policy) {
+        amountControl.setValidators([
+          Validators.required, 
+          Validators.min(1), 
+          Validators.max(available)
+        ]);
+      } else {
+        amountControl.setValidators([Validators.required, Validators.min(1)]);
+      }
+      amountControl.updateValueAndValidity({ emitEvent: false });
     }
-    this.claimForm.get('claimAmount')?.updateValueAndValidity();
   }
 
   loadClaims(): void {

@@ -27,14 +27,17 @@ public class ExceptionMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var statusCode = HttpStatusCode.InternalServerError;
+        var message = exception.Message;
 
-        if (exception.Message.Contains("exists"))
+        if (message.Contains("exists") || message.Contains("must be") || message.Contains("Only"))
             statusCode = HttpStatusCode.BadRequest;
+        else if (message.Contains("credentials") || message.Contains("not found") || message.Contains("Unauthorized"))
+            statusCode = HttpStatusCode.Unauthorized;
 
         var response = new
         {
             success = false,
-            message = exception.Message,
+            message = message,
             statusCode = (int)statusCode
         };
 

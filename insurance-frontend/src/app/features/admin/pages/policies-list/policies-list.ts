@@ -21,7 +21,6 @@ export class PoliciesListComponent implements OnInit {
   // Pagination
   currentPage = signal(1);
   pageSize = signal(10);
-  totalPages = signal(1);
 
   filteredPolicies = computed(() => {
     let filtered = this.policies();
@@ -41,11 +40,28 @@ export class PoliciesListComponent implements OnInit {
       filtered = filtered.filter(p => p.status === status);
     }
 
-    const total = Math.ceil(filtered.length / size);
-    this.totalPages.set(total || 1);
-
     const startIndex = (page - 1) * size;
     return filtered.slice(startIndex, startIndex + size);
+  });
+
+  totalPages = computed(() => {
+    let filtered = this.policies();
+    const query = this.searchQuery().toLowerCase();
+    const status = this.statusFilter();
+    const size = this.pageSize();
+
+    if (query) {
+      filtered = filtered.filter(p => 
+        (p.policyNumber && p.policyNumber.toLowerCase().includes(query)) ||
+        (p.customerId && p.customerId.toLowerCase().includes(query))
+      );
+    }
+
+    if (status) {
+      filtered = filtered.filter(p => p.status === status);
+    }
+
+    return Math.ceil(filtered.length / size) || 1;
   });
 
   pages = computed(() => {

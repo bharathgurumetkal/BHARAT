@@ -2,13 +2,24 @@ using System;
 
 namespace Insurance.Application.DTOs.Claim
 {
+    public class AssignOfficerToClaimDto
+    {
+        public Guid OfficerUserId { get; set; }
+    }
+
     public class ClaimDto
+
     {
         public Guid Id { get; set; }
         public decimal ClaimAmount { get; set; }
         public string Reason { get; set; } = default!;
         public string Status { get; set; } = default!;
         public DateTime CreatedAt { get; set; }
+
+        // Officer Assignment
+        public Guid? AssignedOfficerId { get; set; }
+        public string? AssignedOfficerName { get; set; }
+
 
         // Policy Details
         public Guid PolicyId { get; set; }

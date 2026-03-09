@@ -65,7 +65,7 @@
             </div>
           }
 
-          @for (activity of recentActivity; track activity.title + activity.date) {
+          @for (activity of recentActivity; track $index) {
             <div class="flex items-center justify-between p-5 rounded-xl border border-gray-50 bg-gray-50/50 hover:bg-gray-50 transition-colors">
               <div class="flex items-center gap-4">
                 <div class="w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600">

@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClaimsOfficerApiService } from '../../../../core/services/claims-officer-api.service';
-import { CustomerApiService } from '../../../../core/services/customer-api.service';
+import { ClaimsOfficerService } from '../../services/claims-officer.service';
 import { Claim } from '../../../../core/models/insurance.models';
 import { environment } from '../../../../../environments/environment';
 
@@ -14,15 +14,32 @@ import { environment } from '../../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ManageClaimsComponent implements OnInit {
-  claims = signal<Claim[]>([]);
-  isLoading = signal(true);
-  processingId = signal<string | null>(null);
+  claims         = signal<Claim[]>([]);
+  isLoading      = signal(true);
+  processingId   = signal<string | null>(null);
   successMessage = signal<string | null>(null);
-  errorMessage = signal<string | null>(null);
+  errorMessage   = signal<string | null>(null);
+
+  /** Maps each action to the status the claim immediately moves to */
+  private readonly nextStatus: Record<string, string> = {
+    start:   'UnderReview',
+    approve: 'Approved',
+    reject:  'Rejected',
+    settle:  'Settled'
+  };
+
+  /** For rollback if the API call fails */
+  private readonly prevStatus: Record<string, string> = {
+    start:   'Submitted',
+    approve: 'UnderReview',
+    reject:  'UnderReview',
+    settle:  'Approved'
+  };
 
   constructor(
-    private officerService: ClaimsOfficerApiService,
-    private customerService: CustomerApiService
+    private officerApiService: ClaimsOfficerApiService,
+    private officerService: ClaimsOfficerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,12 +48,18 @@ export class ManageClaimsComponent implements OnInit {
 
   loadAllClaims(): void {
     this.isLoading.set(true);
-    this.officerService.getClaims().subscribe({
+    this.officerApiService.getClaims().subscribe({
       next: (data) => {
-        this.claims.set(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        this.claims.set(
+          data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        );
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        this.isLoading.set(false);
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -45,36 +68,59 @@ export class ManageClaimsComponent implements OnInit {
     this.successMessage.set(null);
     this.errorMessage.set(null);
 
-    let obs;
+    // ── Optimistic Update: update status in UI instantly ──────────────────
+    this.claims.update(list =>
+      list.map(c => c.id === id ? { ...c, status: this.nextStatus[action] } : c)
+    );
+    this.cdr.markForCheck();
+    // ──────────────────────────────────────────────────────────────────────
+
+    let obs$;
     switch (action) {
-      case 'start': obs = this.officerService.startReview(id); break;
-      case 'approve': obs = this.officerService.reviewClaim(id, true); break;
-      case 'reject': obs = this.officerService.reviewClaim(id, false); break;
-      case 'settle': obs = this.officerService.settleClaim(id); break;
+      case 'start':   obs$ = this.officerApiService.startReview(id);        break;
+      case 'approve': obs$ = this.officerApiService.reviewClaim(id, true);  break;
+      case 'reject':  obs$ = this.officerApiService.reviewClaim(id, false); break;
+      case 'settle':  obs$ = this.officerApiService.settleClaim(id);        break;
     }
 
-    obs?.subscribe({
-      next: (res: any) => {
-        this.successMessage.set(`Claim updated: ${action.toUpperCase()}`);
-        this.loadAllClaims();
+    obs$?.subscribe({
+      next: () => {
         this.processingId.set(null);
-        setTimeout(() => this.successMessage.set(null), 3000);
+        this.successMessage.set(`Claim ${action.toUpperCase()} successful`);
+        // Bust shared cache so dashboard + other components also see fresh data
+        this.officerService.invalidateClaimsCache();
+        // Silent background refresh to reconcile with server truth
+        this.officerApiService.getClaims().subscribe({
+          next: (data) => {
+            this.claims.set(
+              data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            );
+            this.cdr.markForCheck();
+          }
+        });
+        this.cdr.markForCheck();
+        setTimeout(() => { this.successMessage.set(null); this.cdr.markForCheck(); }, 3000);
       },
       error: (err) => {
+        // ── Rollback if API fails ─────────────────────────────────────────
+        this.claims.update(list =>
+          list.map(c => c.id === id ? { ...c, status: this.prevStatus[action] } : c)
+        );
         this.errorMessage.set(err.error?.message || `Failed to ${action} claim.`);
         this.processingId.set(null);
+        this.cdr.markForCheck();
       }
     });
   }
 
-  getStatusClass(status: string) {
+  getStatusClass(status: string): string {
     switch (status) {
-      case 'Submitted': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'Submitted':   return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'UnderReview': return 'bg-amber-50 text-amber-600 border-amber-100';
-      case 'Approved': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'Rejected': return 'bg-red-50 text-red-600 border-red-100';
-      case 'Settled': return 'bg-emerald-600 text-white border-emerald-600';
-      default: return 'bg-gray-50 text-gray-600 border-gray-100';
+      case 'Approved':    return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'Rejected':    return 'bg-red-50 text-red-600 border-red-100';
+      case 'Settled':     return 'bg-emerald-600 text-white border-emerald-600';
+      default:            return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   }
 

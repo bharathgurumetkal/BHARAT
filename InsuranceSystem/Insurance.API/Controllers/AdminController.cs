@@ -2,6 +2,7 @@
 using Insurance.Application.DTOs.Auth;
 using Insurance.Application.DTOs.PolicyProduct;
 using Insurance.Application.DTOs.PolicyApplication;
+using Insurance.Application.DTOs.Claim;
 using System.Security.Claims;
 using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
@@ -172,9 +173,19 @@ public class AdminController : ControllerBase
         return Ok(new { Message = "Claims Officer created successfully.", UserId = user.Id });
     }
 
+    // All claims with officer assignment info — for Admin claims management page
+    [HttpGet("claims")]
+    public async Task<IActionResult> GetAllClaims(
+        [FromServices] IClaimService claimService)
+    {
+        var claims = await claimService.GetAllClaimsAsync();
+        return Ok(claims);
+    }
+
     // Claims by status
     [Authorize(Roles = "Admin")]
     [HttpGet("claims-report")]
+
     public async Task<IActionResult> ClaimsReport(
     [FromServices] AppDbContext context)
     {
@@ -265,6 +276,20 @@ public class AdminController : ControllerBase
     {
         await _policyApplicationService.AssignAgentAsync(applicationId, dto.AgentId);
         return Ok(new { Message = "Agent assigned to application successfully." });
+    }
+
+    /// <summary>
+    /// Assign a ClaimsOfficer to a specific Claim.
+    /// The officer will be notified and will see this claim in their queue.
+    /// </summary>
+    [HttpPost("assign-officer-to-claim/{claimId}")]
+    public async Task<IActionResult> AssignOfficerToClaim(
+        Guid claimId,
+        [FromBody] AssignOfficerToClaimDto dto,
+        [FromServices] IClaimService claimService)
+    {
+        await claimService.AssignOfficerAsync(claimId, dto.OfficerUserId);
+        return Ok(new { Message = "Claims Officer assigned to claim successfully." });
     }
 
     // ──────────────────────────────────────────────────────────────────────────

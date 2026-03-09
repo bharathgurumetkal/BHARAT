@@ -106,7 +106,10 @@
                                 <!-- 2. Coverage Notice -->
                                 <div class="flex items-center justify-between px-1">
                                     <div class="text-xs font-bold text-gray-500 italic">
-                                        Maximum claim allowed: <span class="text-gray-900">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</span>
+                                        Max claim allowed: <span class="text-gray-900">{{ availableCoverage() | currency:'INR' }}</span>
+                                        @if (availableCoverage() < selectedPolicy()!.coverageAmount) {
+                                            <span class="text-[9px] text-gray-400 ml-1">(Policy limit: {{ selectedPolicy()!.coverageAmount | currency:'INR' }})</span>
+                                        }
                                     </div>
                                     
                                     @if (isHighClaim()) {
@@ -127,7 +130,7 @@
                                         <input type="number" formControlName="claimAmount" class="input-field w-full pl-8" placeholder="0.00">
                                     </div>
                                     @if (claimForm.get('claimAmount')?.touched && claimForm.get('claimAmount')?.errors?.['max']) {
-                                        <p class="text-red-500 text-[10px] mt-1 font-bold">Cannot exceed coverage limit of {{ selectedPolicy()?.coverageAmount | currency:'INR' }}</p>
+                                        <p class="text-red-500 text-[10px] mt-1 font-bold">Cannot exceed available coverage limit of {{ availableCoverage() | currency:'INR' }}</p>
                                     }
                                 </div>
                             </div>
@@ -136,9 +139,10 @@
                             @if (selectedPolicy()) {
                                 <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
                                     <div class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-3">Live Claim Preview</div>
-                                    <div class="flex items-center justify-between text-xs font-medium">
-                                        <div class="text-gray-500">Coverage: <span class="text-gray-900">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</span></div>
-                                        <div class="text-gray-500">Claim: <span class="text-blue-600 font-bold">-{{ claimForm.get('claimAmount')?.value | currency:'INR' }}</span></div>
+                                    <div class="flex flex-wrap items-center justify-between gap-y-2 text-[11px] font-medium">
+                                        <div class="text-gray-500">Limit: <span class="text-gray-900">{{ selectedPolicy()!.coverageAmount | currency:'INR' }}</span></div>
+                                        <div class="text-gray-500">Available: <span class="text-blue-500 font-bold">{{ availableCoverage() | currency:'INR' }}</span></div>
+                                        <div class="text-gray-500">Claim: <span class="text-blue-600 font-bold">-{{ currentClaimAmount() | currency:'INR' }}</span></div>
                                         <div class="text-gray-500">Remaining: <span [class]="remainingCoverage() < 0 ? 'text-red-600' : 'text-emerald-600 font-bold'">{{ remainingCoverage() | currency:'INR' }}</span></div>
                                     </div>
                                 </div>

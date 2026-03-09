@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClaimsOfficerService } from '../../services/claims-officer.service';
 
@@ -68,7 +68,8 @@ export class OfficerPoliciesListComponent implements OnInit {
   isLoading = signal(true);
 
   constructor(
-    private claimsService: ClaimsOfficerService
+    private claimsService: ClaimsOfficerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -81,9 +82,11 @@ export class OfficerPoliciesListComponent implements OnInit {
       next: (data) => {
         this.policies.set(data);
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       }
     });
   }

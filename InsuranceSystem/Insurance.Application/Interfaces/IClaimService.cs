@@ -15,5 +15,8 @@ namespace Insurance.Application.Interfaces
         Task SettleClaimAsync(Guid claimId);
         Task<List<ClaimDto>> GetClaimsByCustomerAsync(Guid customerUserId);
         Task<List<ClaimDto>> GetAllClaimsAsync();
+        Task<List<ClaimDto>> GetClaimsByOfficerAsync(Guid officerUserId);
+        Task AssignOfficerAsync(Guid claimId, Guid officerUserId);
+        Task<ClaimsOfficerDashboardSummaryDto> GetClaimsOfficerDashboardSummaryAsync(Guid officerUserId);
     }
 }

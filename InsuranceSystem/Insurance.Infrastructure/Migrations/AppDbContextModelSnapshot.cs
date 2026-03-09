@@ -69,6 +69,9 @@ namespace Insurance.Infrastructure.Migrations
                     b.Property<string>("AiSource")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("AssignedOfficerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("ClaimAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");

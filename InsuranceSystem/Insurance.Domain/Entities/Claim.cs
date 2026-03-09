@@ -17,6 +17,9 @@ namespace Insurance.Domain.Entities
         public Guid PolicyId { get; set; }
         public Policy Policy { get; set; } = default!;
 
+        // Officer Assignment — set by Admin
+        public Guid? AssignedOfficerId { get; set; }
+
         public decimal ClaimAmount { get; set; }
 
         public string Reason { get; set; } = default!;

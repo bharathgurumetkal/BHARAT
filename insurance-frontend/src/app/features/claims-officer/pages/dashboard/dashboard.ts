@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ClaimsOfficerService } from '../../services/claims-officer.service';
@@ -26,7 +26,8 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   constructor(
-    private claimsService: ClaimsOfficerService
+    private claimsService: ClaimsOfficerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +56,7 @@ export class ClaimsOfficerDashboardComponent implements OnInit {
 
       this.recentClaims.set(claims.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5));
       this.isLoading.set(false);
+      this.cdr.markForCheck();
     });
   }
 }

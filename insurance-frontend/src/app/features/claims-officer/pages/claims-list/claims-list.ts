@@ -25,13 +25,24 @@ export class ClaimsListComponent implements OnInit {
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
   selectedClaim = signal<Claim | null>(null);
-  activeFilter = signal<'all' | 'high'>('all');
+  activeFilter = signal<'all' | 'Submitted' | 'UnderReview' | 'Approved' | 'Settled' | 'Rejected' | 'high'>('all');
 
-  claims = computed(() => 
-    this.activeFilter() === 'high'
-      ? this.allClaims().filter(c => (c.aiRiskScore ?? 0) >= 70)
-      : this.allClaims()
-  );
+  claims = computed(() => {
+    const f = this.activeFilter();
+    if (f === 'all')  return this.allClaims();
+    if (f === 'high') return this.allClaims().filter(c => (c.aiRiskScore ?? 0) >= 70);
+    return this.allClaims().filter(c => c.status === f);
+  });
+
+  filterCounts = computed(() => ({
+    all:         this.allClaims().length,
+    Submitted:   this.allClaims().filter(c => c.status === 'Submitted').length,
+    UnderReview: this.allClaims().filter(c => c.status === 'UnderReview').length,
+    Approved:    this.allClaims().filter(c => c.status === 'Approved').length,
+    Settled:     this.allClaims().filter(c => c.status === 'Settled').length,
+    Rejected:    this.allClaims().filter(c => c.status === 'Rejected').length,
+    high:        this.allClaims().filter(c => (c.aiRiskScore ?? 0) >= 70).length
+  }));
 
   constructor(
     private claimsService: ClaimsOfficerService
@@ -77,7 +88,7 @@ export class ClaimsListComponent implements OnInit {
     });
   }
 
-  setFilter(f: 'all' | 'high'): void {
+  setFilter(f: 'all' | 'Submitted' | 'UnderReview' | 'Approved' | 'Settled' | 'Rejected' | 'high'): void {
     this.activeFilter.set(f);
   }
 
@@ -140,38 +151,64 @@ export class ClaimsListComponent implements OnInit {
     this.selectedClaim.set(null);
   }
 
+  /** Maps each action to the status it transitions to */
+  private readonly nextStatusMap: Record<string, string> = {
+    start:   'UnderReview',
+    approve: 'Approved',
+    reject:  'Rejected',
+    settle:  'Settled'
+  };
+
+  /** Rollback map in case the API call fails */
+  private readonly prevStatusMap: Record<string, string> = {
+    start:   'Submitted',
+    approve: 'UnderReview',
+    reject:  'UnderReview',
+    settle:  'Approved'
+  };
+
   process(id: string, action: 'start' | 'approve' | 'reject' | 'settle'): void {
     this.processingMap.update(prev => ({ ...prev, [id]: true }));
+    this.successMessage.set(null);
+    this.errorMessage.set(null);
 
-    let obs;
+    const newStatus = this.nextStatusMap[action];
+
+    // ── Optimistic Update: update BOTH list and drawer immediately ──────────
+    this.allClaims.update(list =>
+      list.map(c => c.id === id ? { ...c, status: newStatus } : c)
+    );
+    // Also update the selected claim so the drawer buttons change instantly
+    if (this.selectedClaim()?.id === id) {
+      this.selectedClaim.update(c => c ? { ...c, status: newStatus } : c);
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    let obs$;
     switch (action) {
-      case 'start':   obs = this.claimsService.startReview(id); break;
-      case 'approve': obs = this.claimsService.reviewClaim(id, true); break;
-      case 'reject':  obs = this.claimsService.reviewClaim(id, false); break;
-      case 'settle':  obs = this.claimsService.settleClaim(id); break;
+      case 'start':   obs$ = this.claimsService.startReview(id);        break;
+      case 'approve': obs$ = this.claimsService.reviewClaim(id, true);  break;
+      case 'reject':  obs$ = this.claimsService.reviewClaim(id, false); break;
+      case 'settle':  obs$ = this.claimsService.settleClaim(id);        break;
     }
 
-    obs?.subscribe({
+    obs$?.subscribe({
       next: (res: any) => {
-        const updatedClaims = this.allClaims().map(c => {
-          if (c.id === id) {
-            let newStatus = c.status;
-            if (action === 'start')        newStatus = 'UnderReview';
-            else if (action === 'approve') newStatus = 'Approved';
-            else if (action === 'reject')  newStatus = 'Rejected';
-            else if (action === 'settle')  newStatus = 'Settled';
-            return { ...c, status: newStatus };
-          }
-          return c;
-        });
-        this.allClaims.set(updatedClaims);
-        
-        this.successMessage.set((typeof res === 'string') ? res : (res.message || 'Action completed.'));
+        this.successMessage.set(typeof res === 'string' ? res : (res.message || 'Action completed.'));
         this.processingMap.update(prev => ({ ...prev, [id]: false }));
         setTimeout(() => { this.successMessage.set(null); }, 3000);
       },
       error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Failed to process.');
+        // ── Rollback both signals if API fails ──────────────────────────────
+        const oldStatus = this.prevStatusMap[action];
+        this.allClaims.update(list =>
+          list.map(c => c.id === id ? { ...c, status: oldStatus } : c)
+        );
+        if (this.selectedClaim()?.id === id) {
+          this.selectedClaim.update(c => c ? { ...c, status: oldStatus } : c);
+        }
+        // ────────────────────────────────────────────────────────────────────
+        this.errorMessage.set(err.error?.message || `Failed to ${action} claim.`);
         this.processingMap.update(prev => ({ ...prev, [id]: false }));
         setTimeout(() => { this.errorMessage.set(null); }, 3000);
       }

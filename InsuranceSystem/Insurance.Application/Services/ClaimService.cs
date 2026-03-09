@@ -238,11 +238,70 @@ public class ClaimService : IClaimService
 
     public async Task<List<ClaimDto>> GetAllClaimsAsync()
     {
-        var claims = await _claimRepository.GetAllAsync();
-        return claims.Select(c => MapToDto(c)).ToList();
+        var claims  = await _claimRepository.GetAllAsync();
+        var officers = await _userRepository.GetByRoleAsync("ClaimsOfficer");
+        var userLookup = officers.ToDictionary(u => u.Id, u => u.Name);
+        return claims.Select(c => MapToDto(c, userLookup)).ToList();
     }
 
-    private static ClaimDto MapToDto(Claim c)
+    // ── Officer Assignment ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Admin assigns a specific ClaimsOfficer (by their UserId) to a claim.
+    /// </summary>
+    public async Task AssignOfficerAsync(Guid claimId, Guid officerUserId)
+    {
+        var claim = await _claimRepository.GetByIdAsync(claimId);
+        if (claim == null) throw new Exception("Claim not found.");
+
+        claim.AssignedOfficerId = officerUserId;
+        await _claimRepository.SaveChangesAsync();
+
+        // Notify the assigned officer
+        await _notificationService.CreateAsync(
+            officerUserId,
+            "Claim Assigned to You",
+            $"You have been assigned claim CLM-{claimId.ToString().Substring(0, 8)} (Amount: {claim.ClaimAmount:C}).",
+            "Info"
+        );
+    }
+
+    /// <summary>
+    /// Returns only claims assigned to this specific officer (by their UserId).
+    /// </summary>
+    public async Task<List<ClaimDto>> GetClaimsByOfficerAsync(Guid officerUserId)
+    {
+        var claims = await _claimRepository.GetAllAsync();
+        return claims
+            .Where(c => c.AssignedOfficerId == officerUserId)
+            .Select(c => MapToDto(c))
+            .ToList();
+    }
+
+    public async Task<ClaimsOfficerDashboardSummaryDto> GetClaimsOfficerDashboardSummaryAsync(Guid officerUserId)
+    {
+        var claims = await _claimRepository.GetAllAsync();
+        var myClaims = claims.Where(c => c.AssignedOfficerId == officerUserId).ToList();
+
+        var recentClaims = myClaims
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(5)
+            .Select(c => MapToDto(c))
+            .ToList();
+
+        return new ClaimsOfficerDashboardSummaryDto
+        {
+            Total       = myClaims.Count,
+            Submitted   = myClaims.Count(c => c.Status == ClaimStatus.Submitted),
+            UnderReview = myClaims.Count(c => c.Status == ClaimStatus.UnderReview),
+            Approved    = myClaims.Count(c => c.Status == ClaimStatus.Approved),
+            Rejected    = myClaims.Count(c => c.Status == ClaimStatus.Rejected),
+            Settled     = myClaims.Count(c => c.Status == ClaimStatus.Settled),
+            RecentClaims = recentClaims
+        };
+    }
+
+    private static ClaimDto MapToDto(Claim c, Dictionary<Guid, string>? userLookup = null)
     {
         return new ClaimDto
         {
@@ -252,6 +311,11 @@ public class ClaimService : IClaimService
             Status = c.Status.ToString(),
             CreatedAt = c.CreatedAt,
 
+            // Officer Assignment
+            AssignedOfficerId   = c.AssignedOfficerId,
+            AssignedOfficerName = c.AssignedOfficerId.HasValue && userLookup != null
+                ? (userLookup.TryGetValue(c.AssignedOfficerId.Value, out var n) ? n : null)
+                : null,
             // Policy Details
             PolicyId = c.PolicyId,
             PolicyNumber = c.Policy?.PolicyNumber ?? "N/A",

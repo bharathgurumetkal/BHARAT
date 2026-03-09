@@ -169,6 +169,18 @@
         }
       }
     },
+    "/api/Admin/claims": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Admin/claims-report": {
       "get": {
         "tags": [
@@ -298,6 +310,48 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/AssignAgentToApplicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/assign-officer-to-claim/{claimId}": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignOfficerToClaimDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignOfficerToClaimDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignOfficerToClaimDto"
               }
             }
           }
@@ -563,7 +617,7 @@
         }
       }
     },
-    "/api/ClaimsOfficer/policies": {
+    "/api/ClaimsOfficer/dashboard-summary": {
       "get": {
         "tags": [
           "ClaimsOfficer"
@@ -975,6 +1029,16 @@
         "type": "object",
         "properties": {
           "agentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AssignOfficerToClaimDto": {
+        "type": "object",
+        "properties": {
+          "officerUserId": {
             "type": "string",
             "format": "uuid"
           }

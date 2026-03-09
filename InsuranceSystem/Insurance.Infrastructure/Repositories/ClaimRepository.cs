@@ -31,6 +31,7 @@ public class ClaimRepository : IClaimRepository
     public async Task<List<Claim>> GetClaimsByCustomerAsync(Guid customerUserId)
     {
         return await _context.Claims
+            .AsNoTracking()
             .Include(c => c.Documents)
             .Include(c => c.Policy)
             .ThenInclude(p => p.Customer)
@@ -46,6 +47,7 @@ public class ClaimRepository : IClaimRepository
     public async Task<List<Claim>> GetAllAsync()
     {
         return await _context.Claims
+            .AsNoTracking()
             .Include(c => c.Documents)
             .Include(c => c.Policy)
             .ThenInclude(p => p.Customer)

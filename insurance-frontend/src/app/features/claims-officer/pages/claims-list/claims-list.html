@@ -7,34 +7,85 @@
         <h1 class="text-2xl font-semibold text-gray-800 tracking-normal">Claims Ledger</h1>
         <p class="text-sm text-gray-500 mt-1">Review and synchronize insurance claims across the enterprise.</p>
       </div>
-      <div class="flex items-center gap-3">
-        <!-- High Risk Only Filter -->
-        <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
-          <button (click)="setFilter('all')"
-                  [class]="activeFilter() === 'all' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-700'"
-                  class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
-            All Claims
-          </button>
-          <button (click)="setFilter('high')"
-                  [class]="activeFilter() === 'high' ? 'bg-red-500 text-white' : 'text-gray-500 hover:text-red-600'"
-                  class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-            High Risk Only
-            <span class="ml-1 bg-white/20 px-1.5 py-0.5 rounded-full text-[10px]">{{ getHighRiskCount() }}</span>
-          </button>
-        </div>
-        <button (click)="loadClaims()"
-                [disabled]="isRefreshing()"
-                class="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm active:scale-95 disabled:bg-gray-50 disabled:cursor-not-allowed">
-          <svg xmlns="http://www.w3.org/2000/svg" 
-               [class.animate-spin]="isRefreshing()"
-               class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {{ isRefreshing() ? 'Refreshing...' : 'Refresh' }}
-        </button>
-      </div>
+      <button (click)="loadClaims()"
+              [disabled]="isRefreshing()"
+              class="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm active:scale-95 disabled:bg-gray-50 disabled:cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             [class.animate-spin]="isRefreshing()"
+             class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        {{ isRefreshing() ? 'Refreshing...' : 'Refresh' }}
+      </button>
     </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap gap-2">
+      <!-- All -->
+      <button (click)="setFilter('all')"
+              [class]="activeFilter() === 'all' ? 'bg-gray-900 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        All
+        <span [class]="activeFilter() === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().all }}</span>
+      </button>
+
+      <!-- Submitted -->
+      <button (click)="setFilter('Submitted')"
+              [class]="activeFilter() === 'Submitted' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-indigo-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        New / Submitted
+        <span [class]="activeFilter() === 'Submitted' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().Submitted }}</span>
+      </button>
+
+      <!-- Under Review -->
+      <button (click)="setFilter('UnderReview')"
+              [class]="activeFilter() === 'UnderReview' ? 'bg-amber-500 text-white shadow-md shadow-amber-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-amber-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        Under Review
+        <span [class]="activeFilter() === 'UnderReview' ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().UnderReview }}</span>
+      </button>
+
+      <!-- Approved -->
+      <button (click)="setFilter('Approved')"
+              [class]="activeFilter() === 'Approved' ? 'bg-green-600 text-white shadow-md shadow-green-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-green-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        Approved
+        <span [class]="activeFilter() === 'Approved' ? 'bg-white/20 text-white' : 'bg-green-50 text-green-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().Approved }}</span>
+      </button>
+
+      <!-- Settled -->
+      <button (click)="setFilter('Settled')"
+              [class]="activeFilter() === 'Settled' ? 'bg-emerald-700 text-white shadow-md shadow-emerald-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-emerald-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        Settled
+        <span [class]="activeFilter() === 'Settled' ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().Settled }}</span>
+      </button>
+
+      <!-- Rejected -->
+      <button (click)="setFilter('Rejected')"
+              [class]="activeFilter() === 'Rejected' ? 'bg-red-500 text-white shadow-md shadow-red-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-red-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        Rejected
+        <span [class]="activeFilter() === 'Rejected' ? 'bg-white/20 text-white' : 'bg-red-50 text-red-500'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().Rejected }}</span>
+      </button>
+
+      <!-- High Risk -->
+      <button (click)="setFilter('high')"
+              [class]="activeFilter() === 'high' ? 'bg-rose-600 text-white shadow-md shadow-rose-100' : 'bg-white text-gray-500 border border-gray-200 hover:border-rose-200'"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all">
+        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+        High Risk AI
+        <span [class]="activeFilter() === 'high' ? 'bg-white/20 text-white' : 'bg-rose-50 text-rose-600'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black">{{ filterCounts().high }}</span>
+      </button>
+    </div>
+
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -36,7 +36,7 @@
       </div>
 
       <!-- Pending -->
-      <div class="comm-stat-card comm-stat-amber">
+      <!-- <div class="comm-stat-card comm-stat-amber">
         <div class="comm-stat-icon">
           <span class="material-icons">pending_actions</span>
         </div>
@@ -45,10 +45,10 @@
           <div class="comm-stat-value">{{ pendingAmount() | currency:'USD':'symbol':'1.2-2' }}</div>
           <div class="comm-stat-sub">{{ pendingCount() }} unpaid</div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Paid -->
-      <div class="comm-stat-card comm-stat-green">
+      <!-- <div class="comm-stat-card comm-stat-green">
         <div class="comm-stat-icon">
           <span class="material-icons">check_circle</span>
         </div>
@@ -57,7 +57,7 @@
           <div class="comm-stat-value">{{ paidAmount() | currency:'USD':'symbol':'1.2-2' }}</div>
           <div class="comm-stat-sub">{{ paidCount() }} settled</div>
         </div>
-      </div>
+      </div> -->
 
     </div>
   }
@@ -95,7 +95,6 @@
               <th class="comm-th text-right">Premium</th>
               <th class="comm-th text-center">Rate</th>
               <th class="comm-th text-right">Commission</th>
-              <th class="comm-th text-center">Status</th>
               <th class="comm-th text-right">Earned On</th>
             </tr>
           </thead>
@@ -139,21 +138,6 @@
                   </span>
                 </td>
 
-                <!-- Status Badge -->
-                <td class="comm-td text-center">
-                  @if (c.isPaid) {
-                    <span class="comm-badge-paid">
-                      <span class="material-icons" style="font-size:12px;">check</span>
-                      Paid
-                    </span>
-                  } @else {
-                    <span class="comm-badge-pending">
-                      <span class="material-icons" style="font-size:12px;">schedule</span>
-                      Pending
-                    </span>
-                  }
-                </td>
-
                 <!-- Earned Date -->
                 <td class="comm-td text-right">
                   <span class="text-xs text-gray-500 font-medium">
@@ -174,7 +158,7 @@
               <td class="px-6 py-4 text-right font-black text-gray-900">
                 {{ totalEarned() | currency:'USD':'symbol':'1.2-2' }}
               </td>
-              <td colspan="2"></td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
