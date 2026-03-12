@@ -15,13 +15,15 @@ namespace Insurance.Tests
     {
         private Mock<IPolicyRepository> _policyRepositoryMock;
         private Mock<IPropertyRepository> _propertyRepositoryMock;
+        private Mock<IAuditLogService> _auditLogServiceMock;
         private PolicyService _policyService;
 
         public PolicyServiceTests()
         {
             _policyRepositoryMock = new Mock<IPolicyRepository>();
             _propertyRepositoryMock = new Mock<IPropertyRepository>();
-            _policyService = new PolicyService(_policyRepositoryMock.Object, _propertyRepositoryMock.Object);
+            _auditLogServiceMock = new Mock<IAuditLogService>();
+            _policyService = new PolicyService(_policyRepositoryMock.Object, _propertyRepositoryMock.Object, _auditLogServiceMock.Object);
         }
 
         // ─── Premium Calculation ─────────────────────────────────────────────────

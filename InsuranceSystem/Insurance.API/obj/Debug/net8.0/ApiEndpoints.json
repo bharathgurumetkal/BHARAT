@@ -146,6 +146,16 @@
   },
   {
     "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetAuditLogs",
+    "RelativePath": "api/Admin/audit-logs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
     "Method": "GetAllClaims",
     "RelativePath": "api/Admin/claims",
     "HttpMethod": "GET",
@@ -210,6 +220,16 @@
     "ContainingType": "Insurance.API.Controllers.AdminController",
     "Method": "GetAllCustomers",
     "RelativePath": "api/Admin/customers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.AdminController",
+    "Method": "GetDashboardSummary",
+    "RelativePath": "api/Admin/dashboard-summary",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -429,6 +449,11 @@
         "Name": "approve",
         "Type": "System.Boolean",
         "IsRequired": false
+      },
+      {
+        "Name": "remarks",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -503,6 +528,27 @@
   },
   {
     "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "DownloadPolicyDocument",
+    "RelativePath": "api/Customer/download-policy/{policyId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "policyId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "type",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
     "Method": "MakePayment",
     "RelativePath": "api/Customer/pay",
     "HttpMethod": "POST",
@@ -551,6 +597,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Insurance.API.Controllers.CustomerController",
+    "Method": "RenewPolicy",
+    "RelativePath": "api/Customer/renew-policy/{policyId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "policyId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

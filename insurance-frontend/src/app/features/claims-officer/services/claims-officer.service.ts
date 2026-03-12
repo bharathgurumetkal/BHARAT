@@ -45,8 +45,10 @@ export class ClaimsOfficerService {
     );
   }
 
-  reviewClaim(claimId: string, approve: boolean): Observable<any> {
-    return this.http.post(`${this.apiUrl}/review?claimId=${claimId}&approve=${approve}`, {}).pipe(
+  reviewClaim(claimId: string, approve: boolean, remarks?: string): Observable<any> {
+    const params: any = { approve };
+    if (remarks) params.remarks = remarks;
+    return this.http.post(`${this.apiUrl}/review?claimId=${claimId}&approve=${approve}${remarks ? '&remarks=' + encodeURIComponent(remarks) : ''}`, {}).pipe(
       tap(() => this.invalidateClaimsCache())
     );
   }

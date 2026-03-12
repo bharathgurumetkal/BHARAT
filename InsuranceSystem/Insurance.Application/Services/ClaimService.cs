@@ -1,4 +1,5 @@
-﻿using Insurance.Application.DTOs.Claim;
+using Insurance.Application.DTOs.AuditLog;
+using Insurance.Application.DTOs.Claim;
 using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
 using Insurance.Domain.Enums;
@@ -13,19 +14,22 @@ public class ClaimService : IClaimService
     private readonly IAiClaimClient _aiClaimClient;
     private readonly INotificationService _notificationService;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditLogService _auditLogService;
 
     public ClaimService(
         IClaimRepository claimRepository,
         IPolicyRepository policyRepository,
         IAiClaimClient aiClaimClient,
         INotificationService notificationService,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IAuditLogService auditLogService)
     {
         _claimRepository = claimRepository;
         _policyRepository = policyRepository;
         _aiClaimClient = aiClaimClient;
         _notificationService = notificationService;
         _userRepository = userRepository;
+        _auditLogService = auditLogService;
     }
 
     public async Task SubmitClaimAsync(SubmitClaimDto dto)
@@ -84,6 +88,14 @@ public class ClaimService : IClaimService
                 "Info"
             );
         }
+
+        await _auditLogService.LogAsync(new AuditLogEntry
+        {
+            Action = AuditAction.ClaimSubmitted.ToString(),
+            EntityType = "Claim",
+            EntityId = claim.Id.ToString(),
+            Description = $"Claim submitted for policy {policy.PolicyNumber}."
+        });
 
         // AI Analysis after save (non-blocking for the customer)
         try 
@@ -157,27 +169,45 @@ public class ClaimService : IClaimService
     }
 
     /// <summary>
-    /// Move a claim from Submitted → UnderReview.
+    /// Atomically claims a Submitted (or auto-flagged UnderReview) claim for this officer.
+    /// Prevents race conditions by checking if another officer has already locked it.
     /// </summary>
-    public async Task StartReviewAsync(Guid claimId)
+    public async Task StartReviewAsync(Guid claimId, Guid officerUserId)
     {
         var claim = await _claimRepository.GetByIdAsync(claimId);
 
         if (claim == null)
             throw new Exception("Claim not found.");
 
-        if (claim.Status != ClaimStatus.Submitted)
-            throw new Exception($"Cannot start review. Current status: {claim.Status}. Expected: Submitted.");
+        // Allow Submitted OR already-in-UnderReview (auto-fraud-flagged claims land here directly)
+        if (claim.Status != ClaimStatus.Submitted && claim.Status != ClaimStatus.UnderReview)
+            throw new Exception($"Cannot start review. Current status: {claim.Status}.");
 
+        // Race condition guard: if already locked by ANOTHER officer, reject
+        if (claim.AssignedOfficerId.HasValue && claim.AssignedOfficerId != officerUserId)
+            throw new Exception($"This claim is already being reviewed by another officer.");
+
+        // Atomically assign + transition
+        claim.AssignedOfficerId = officerUserId;
         claim.Status = ClaimStatus.UnderReview;
 
         await _claimRepository.SaveChangesAsync();
+
+        await _auditLogService.LogAsync(new AuditLogEntry
+        {
+            UserId = officerUserId.ToString(),
+            Action = AuditAction.ClaimUnderReview.ToString(),
+            EntityType = "Claim",
+            EntityId = claim.Id.ToString(),
+            Description = $"Officer {officerUserId} started review and locked claim CLM-{claim.Id.ToString().Substring(0,8)}."
+        });
     }
 
     /// <summary>
     /// Approve or reject a claim that is UnderReview.
+    /// Only the officer who locked the claim (AssignedOfficerId) can make this decision.
     /// </summary>
-    public async Task ReviewClaimAsync(Guid claimId, bool approve)
+    public async Task ReviewClaimAsync(Guid claimId, Guid officerUserId, bool approve, string? remarks = null)
     {
         var claim = await _claimRepository.GetByIdAsync(claimId);
 
@@ -187,19 +217,43 @@ public class ClaimService : IClaimService
         if (claim.Status != ClaimStatus.UnderReview)
             throw new Exception($"Cannot review. Current status: {claim.Status}. Expected: UnderReview.");
 
-        claim.Status = approve
-            ? ClaimStatus.Approved
-            : ClaimStatus.Rejected;
+        // Ownership check: only the assigned officer (or any officer if unassigned) can review
+        if (claim.AssignedOfficerId.HasValue && claim.AssignedOfficerId != officerUserId)
+            throw new Exception("You are not the assigned officer for this claim.");
+
+        // Rejection requires a remark (real-world regulatory requirement)
+        if (!approve && string.IsNullOrWhiteSpace(remarks))
+            throw new Exception("A rejection reason is required.");
+
+        claim.Status = approve ? ClaimStatus.Approved : ClaimStatus.Rejected;
+        claim.ReviewedByOfficerId = officerUserId;
+        claim.ReviewedAt = DateTime.UtcNow;
+        claim.ReviewRemarks = remarks;
+
+        // Lock to this officer if not already set
+        if (!claim.AssignedOfficerId.HasValue)
+            claim.AssignedOfficerId = officerUserId;
 
         await _claimRepository.SaveChangesAsync();
+
+        await _auditLogService.LogAsync(new AuditLogEntry
+        {
+            UserId = officerUserId.ToString(),
+            Action = approve ? AuditAction.ClaimApproved.ToString() : AuditAction.ClaimRejected.ToString(),
+            EntityType = "Claim",
+            EntityId = claim.Id.ToString(),
+            Description = approve
+                ? $"Claim approved by officer {officerUserId}. Remarks: {remarks ?? "—"}"
+                : $"Claim rejected by officer {officerUserId}. Reason: {remarks}"
+        });
 
         // Notify Customer
         await _notificationService.CreateAsync(
             claim.Policy?.CustomerId ?? Guid.Empty,
-            approve ? "Claim Approved" : "Claim Rejected",
-            approve 
-                ? $"Your claim for {claim.ClaimAmount:C} has been approved."
-                : $"Your claim for {claim.ClaimAmount:C} has been rejected.",
+            approve ? "Claim Approved ✅" : "Claim Rejected ❌",
+            approve
+                ? $"Your claim for {claim.ClaimAmount:C} has been approved and is being processed."
+                : $"Your claim for {claim.ClaimAmount:C} has been rejected. Reason: {remarks}",
             approve ? "Success" : "Risk"
         );
     }
@@ -220,6 +274,14 @@ public class ClaimService : IClaimService
         claim.Status = ClaimStatus.Settled;
 
         await _claimRepository.SaveChangesAsync();
+
+        await _auditLogService.LogAsync(new AuditLogEntry
+        {
+            Action = AuditAction.ClaimSettled.ToString(),
+            EntityType = "Claim",
+            EntityId = claim.Id.ToString(),
+            Description = "Claim funds settled and released."
+        });
 
         // Notify Customer
         await _notificationService.CreateAsync(
@@ -267,21 +329,29 @@ public class ClaimService : IClaimService
     }
 
     /// <summary>
-    /// Returns only claims assigned to this specific officer (by their UserId).
+    /// Returns ONLY claims explicitly assigned to this officer by an administrator.
     /// </summary>
     public async Task<List<ClaimDto>> GetClaimsByOfficerAsync(Guid officerUserId)
     {
-        var claims = await _claimRepository.GetAllAsync();
-        return claims
+        var allClaims = await _claimRepository.GetAllAsync();
+        
+        var visibleClaims = allClaims
             .Where(c => c.AssignedOfficerId == officerUserId)
+            .ToList();
+
+        return visibleClaims
             .Select(c => MapToDto(c))
             .ToList();
     }
 
     public async Task<ClaimsOfficerDashboardSummaryDto> GetClaimsOfficerDashboardSummaryAsync(Guid officerUserId)
     {
-        var claims = await _claimRepository.GetAllAsync();
-        var myClaims = claims.Where(c => c.AssignedOfficerId == officerUserId).ToList();
+        var allClaims = await _claimRepository.GetAllAsync();
+
+        // Strict visibility: only what is assigned to this officer
+        var myClaims = allClaims
+            .Where(c => c.AssignedOfficerId == officerUserId)
+            .ToList();
 
         var recentClaims = myClaims
             .OrderByDescending(c => c.CreatedAt)

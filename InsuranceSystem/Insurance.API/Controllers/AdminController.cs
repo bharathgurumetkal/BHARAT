@@ -1,4 +1,4 @@
-﻿using Insurance.Application.DTOs.Policy;
+using Insurance.Application.DTOs.Policy;
 using Insurance.Application.DTOs.Auth;
 using Insurance.Application.DTOs.PolicyProduct;
 using Insurance.Application.DTOs.PolicyApplication;
@@ -25,8 +25,8 @@ public class AdminController : ControllerBase
     private readonly IClaimsOfficerRepository _claimsOfficerRepository;
     private readonly IPolicyProductService _policyProductService;
     private readonly IPolicyApplicationService _policyApplicationService;
-
     private readonly IPolicyService _policyService;
+    private readonly IClaimService _claimService;
 
     public AdminController(
         IAdminService adminService,
@@ -36,7 +36,8 @@ public class AdminController : ControllerBase
         IClaimsOfficerRepository claimsOfficerRepository,
         IPolicyProductService policyProductService,
         IPolicyApplicationService policyApplicationService,
-        IPolicyService policyService)
+        IPolicyService policyService,
+        IClaimService claimService)
     {
         _adminService = adminService;
         _userRepository = userRepository;
@@ -46,6 +47,7 @@ public class AdminController : ControllerBase
         _policyProductService = policyProductService;
         _policyApplicationService = policyApplicationService;
         _policyService = policyService;
+        _claimService = claimService;
     }
 
     [HttpGet("agents")]
@@ -59,7 +61,16 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> GetAllClaimsOfficers()
     {
         var officers = await _claimsOfficerRepository.GetAllAsync();
-        return Ok(officers);
+        var result = officers.Select(o => new {
+            Id = o.Id,
+            UserId = o.UserId,
+            Department = o.Department,
+            User = new {
+                Name = o.User?.Name ?? "—",
+                Email = o.User?.Email ?? "—"
+            }
+        });
+        return Ok(result);
     }
 
     [HttpGet("products")]
@@ -83,6 +94,7 @@ public class AdminController : ControllerBase
         var policies = await _policyService.GetAllPoliciesAsync();
         return Ok(policies);
     }
+
 
     [HttpGet("customers")]
     public async Task<IActionResult> GetAllCustomers()
@@ -175,10 +187,9 @@ public class AdminController : ControllerBase
 
     // All claims with officer assignment info — for Admin claims management page
     [HttpGet("claims")]
-    public async Task<IActionResult> GetAllClaims(
-        [FromServices] IClaimService claimService)
+    public async Task<IActionResult> GetAllClaims()
     {
-        var claims = await claimService.GetAllClaimsAsync();
+        var claims = await _claimService.GetAllClaimsAsync();
         return Ok(claims);
     }
 
@@ -241,13 +252,12 @@ public class AdminController : ControllerBase
     [HttpPost("create-policy")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreatePolicy(
-    [FromBody] CreatePolicyDto dto,
-    [FromServices] IPolicyService policyService)
+    [FromBody] CreatePolicyDto dto)
     {
         var adminId = Guid.Parse(
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-        var policyId = await policyService.CreatePolicyAsync(dto, adminId);
+        var policyId = await _policyService.CreatePolicyAsync(dto, adminId);
 
         return Ok(new { PolicyId = policyId });
     }
@@ -285,10 +295,9 @@ public class AdminController : ControllerBase
     [HttpPost("assign-officer-to-claim/{claimId}")]
     public async Task<IActionResult> AssignOfficerToClaim(
         Guid claimId,
-        [FromBody] AssignOfficerToClaimDto dto,
-        [FromServices] IClaimService claimService)
+        [FromBody] AssignOfficerToClaimDto dto)
     {
-        await claimService.AssignOfficerAsync(claimId, dto.OfficerUserId);
+        await _claimService.AssignOfficerAsync(claimId, dto.OfficerUserId);
         return Ok(new { Message = "Claims Officer assigned to claim successfully." });
     }
 
@@ -420,5 +429,209 @@ public class AdminController : ControllerBase
         }
 
         return Ok(result.OrderByDescending(r => ((dynamic)r).RiskExposureScore));
+    }
+
+    [HttpGet("audit-logs")]
+    public async Task<IActionResult> GetAuditLogs([FromServices] IAuditLogService auditLogService)
+    {
+        var logs = await auditLogService.GetAllLogsAsync();
+        return Ok(logs);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SMART ANALYTICS DASHBOARD — Single unified endpoint
+    // ──────────────────────────────────────────────────────────────────────────
+    [HttpGet("dashboard-summary")]
+    public async Task<IActionResult> GetDashboardSummary([FromServices] AppDbContext context)
+    {
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1);
+        var lastMonthStart = monthStart.AddMonths(-1);
+
+        // ── Core Counts ──
+        var totalPolicies    = await context.Policies.CountAsync();
+        var activePolicies   = await context.Policies.CountAsync(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active);
+        var draftPolicies    = await context.Policies.CountAsync(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Draft);
+        var expiredPolicies  = await context.Policies.CountAsync(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Expired);
+        var totalCustomers   = await context.Customers.CountAsync();
+        var totalAgents      = await context.Agents.CountAsync();
+        var totalClaims      = await context.Claims.CountAsync();
+
+        // ── Claim Status Breakdown ──
+        var claimsByStatus = await context.Claims
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key.ToString(), Count = g.Count(), Total = g.Sum(x => x.ClaimAmount) })
+            .ToListAsync();
+
+        var pendingClaims  = claimsByStatus.FirstOrDefault(c => c.Status == "Submitted")?.Count ?? 0;
+        var underReview    = claimsByStatus.FirstOrDefault(c => c.Status == "UnderReview")?.Count ?? 0;
+        var approvedClaims = claimsByStatus.FirstOrDefault(c => c.Status == "Approved")?.Count ?? 0;
+        var settledClaims  = claimsByStatus.FirstOrDefault(c => c.Status == "Settled")?.Count ?? 0;
+        var rejectedClaims = claimsByStatus.FirstOrDefault(c => c.Status == "Rejected")?.Count ?? 0;
+
+        // ── Revenue (from Payments table = actual collected premiums) ──
+        var hasPayments = await context.Payments.AnyAsync();
+        var totalRevenue     = hasPayments ? await context.Payments.SumAsync(p => p.Amount) : 0m;
+        var monthRevenue     = hasPayments ? await context.Payments
+                                  .Where(p => p.PaymentDate >= monthStart)
+                                  .SumAsync(p => p.Amount) : 0m;
+        var lastMonthRevenue = hasPayments ? await context.Payments
+                                  .Where(p => p.PaymentDate >= lastMonthStart && p.PaymentDate < monthStart)
+                                  .SumAsync(p => p.Amount) : 0m;
+
+        // If no payments, fall back to sum of active policy premiums (these ARE collected)
+        if (totalRevenue == 0)
+        {
+            totalRevenue = await context.Policies
+                .Where(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active)
+                .SumAsync(p => p.Premium);
+        }
+        if (monthRevenue == 0)
+        {
+            monthRevenue = await context.Policies
+                .Where(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active
+                         && p.StartDate.HasValue && p.StartDate >= monthStart)
+                .SumAsync(p => p.Premium);
+        }
+        if (lastMonthRevenue == 0)
+        {
+            lastMonthRevenue = await context.Policies
+                .Where(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active
+                         && p.StartDate.HasValue && p.StartDate >= lastMonthStart && p.StartDate < monthStart)
+                .SumAsync(p => p.Premium);
+        }
+
+        var revenueMoMChange = lastMonthRevenue > 0
+            ? Math.Round((double)(monthRevenue - lastMonthRevenue) / (double)lastMonthRevenue * 100, 1)
+            : 0;
+
+        // ── 6-month Revenue Trend (from Payments, or from Policy activation months) ──
+        var sixMonthsAgo = now.AddMonths(-6);
+        var revenueTrend = hasPayments
+            ? await context.Payments
+                .Where(p => p.PaymentDate >= sixMonthsAgo)
+                .GroupBy(p => new { p.PaymentDate.Year, p.PaymentDate.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                .ToListAsync()
+            : await context.Policies
+                .Where(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active
+                         && p.StartDate.HasValue && p.StartDate >= sixMonthsAgo)
+                .GroupBy(p => new { p.StartDate!.Value.Year, p.StartDate!.Value.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Premium) })
+                .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                .ToListAsync();
+
+        var monthNames = new[] { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+        // ── Total Sum Insured & Claim Exposure ──
+        var totalSumInsured  = await context.Policies.Where(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active).SumAsync(p => p.CoverageAmount);
+        var totalClaimAmount = await context.Claims
+            .Where(c => c.Status != Insurance.Domain.Enums.ClaimStatus.Rejected)
+            .SumAsync(c => c.ClaimAmount);
+        var lossRatio = totalRevenue > 0 ? Math.Round((double)totalClaimAmount / (double)totalRevenue * 100, 1) : 0;
+
+        // ── AI Risk Distribution ──
+        var aiClaims   = await context.Claims.Where(c => c.AiRiskScore.HasValue).ToListAsync();
+        var highRisk   = aiClaims.Count(c => c.AiRiskScore >= 70);
+        var mediumRisk = aiClaims.Count(c => c.AiRiskScore >= 40 && c.AiRiskScore < 70);
+        var lowRisk    = aiClaims.Count(c => c.AiRiskScore < 40);
+        var avgScore   = aiClaims.Any() ? Math.Round(aiClaims.Average(c => (double)c.AiRiskScore!.Value), 1) : 0;
+
+        // ── New Policies This Month ──
+        var newPoliciesThisMonth = await context.Policies.CountAsync(p => p.StartDate >= monthStart);
+        var newCustomersThisMonth = await context.Customers
+            .CountAsync(c => c.User != null && c.User.CreatedAt >= monthStart);
+
+        // ── Policy Expiring Soon (next 30 days) ──
+        var expiringIn30Days = await context.Policies
+            .CountAsync(p => p.Status == Insurance.Domain.Enums.PolicyStatus.Active
+                          && p.EndDate <= now.AddDays(30)
+                          && p.EndDate >= now);
+
+        // ── Claims submitted this month ──
+        var claimsThisMonth = await context.Claims.CountAsync(c => c.CreatedAt >= monthStart);
+
+        // ── Claim Approval Rate ──
+        var decidedClaims = approvedClaims + settledClaims + rejectedClaims;
+        var approvalRate = decidedClaims > 0
+            ? Math.Round((double)(approvedClaims + settledClaims) / decidedClaims * 100, 1)
+            : 0;
+
+        // ── Top Policy Products by count (via PolicyApplication -> PolicyProduct) ──
+        var topProducts = await context.Policies
+            .Where(p => p.ApplicationId != null)
+            .Include(p => p.Application!)
+                .ThenInclude(a => a.Product)
+            .ToListAsync();
+
+        var topProductsByName = topProducts
+            .GroupBy(p => p.Application?.Product?.Name ?? "Unknown")
+            .Select(g => new { ProductName = g.Key, PolicyCount = g.Count(), TotalPremium = g.Sum(x => x.Premium) })
+            .OrderByDescending(g => g.PolicyCount)
+            .Take(5)
+            .ToList();
+
+        return Ok(new
+        {
+            // KPIs
+            TotalPolicies          = totalPolicies,
+            ActivePolicies         = activePolicies,
+            DraftPolicies          = draftPolicies,
+            ExpiredPolicies        = expiredPolicies,
+            TotalCustomers         = totalCustomers,
+            TotalAgents            = totalAgents,
+            TotalClaims            = totalClaims,
+            PendingClaims          = pendingClaims,
+            UnderReviewClaims      = underReview,
+            ApprovedClaims         = approvedClaims,
+            SettledClaims          = settledClaims,
+            RejectedClaims         = rejectedClaims,
+            NewPoliciesThisMonth   = newPoliciesThisMonth,
+            NewCustomersThisMonth  = newCustomersThisMonth,
+            ClaimsThisMonth        = claimsThisMonth,
+            ExpiringIn30Days       = expiringIn30Days,
+
+            // Financial
+            TotalRevenue           = totalRevenue,
+            MonthRevenue           = monthRevenue,
+            LastMonthRevenue       = lastMonthRevenue,
+            RevenueMoMChange       = revenueMoMChange,
+            TotalSumInsured        = totalSumInsured,
+            TotalClaimExposure     = totalClaimAmount,
+            LossRatio              = lossRatio,
+            ClaimApprovalRate      = approvalRate,
+
+            // Revenue Trend
+            RevenueTrend           = revenueTrend.Select(r => new
+            {
+                Month   = monthNames[r.Month] + " " + r.Year,
+                Revenue = r.Revenue
+            }),
+
+            // AI Risk
+            ScoredClaims           = aiClaims.Count,
+            HighRiskClaims         = highRisk,
+            MediumRiskClaims       = mediumRisk,
+            LowRiskClaims          = lowRisk,
+            AverageRiskScore       = avgScore,
+
+            // Top Products
+            TopProducts            = topProductsByName.Select(p => new
+            {
+                Product = p.ProductName,
+                Count   = p.PolicyCount,
+                Premium = p.TotalPremium
+            }),
+
+            // Claims Breakdown 
+            ClaimsBreakdown        = claimsByStatus.Select(c => new
+            {
+                c.Status,
+                c.Count,
+                c.Total
+            })
+        });
     }
 }

@@ -19,6 +19,7 @@ namespace Insurance.Tests
         private Mock<IPropertyRepository> _propertyRepositoryMock;
         private Mock<ICustomerRepository> _customerRepositoryMock;
         private Mock<INotificationService> _notificationServiceMock;
+        private Mock<IAuditLogService> _auditLogServiceMock;
         private PolicyApplicationService _applicationService;
 
         public PolicyApplicationServiceTests()
@@ -29,6 +30,7 @@ namespace Insurance.Tests
             _propertyRepositoryMock = new Mock<IPropertyRepository>();
             _customerRepositoryMock = new Mock<ICustomerRepository>();
             _notificationServiceMock = new Mock<INotificationService>();
+            _auditLogServiceMock = new Mock<IAuditLogService>();
 
             _applicationService = new PolicyApplicationService(
                 _applicationRepositoryMock.Object,
@@ -36,7 +38,8 @@ namespace Insurance.Tests
                 _policyRepositoryMock.Object,
                 _propertyRepositoryMock.Object,
                 _customerRepositoryMock.Object,
-                _notificationServiceMock.Object
+                _notificationServiceMock.Object,
+                _auditLogServiceMock.Object
             );
         }
 

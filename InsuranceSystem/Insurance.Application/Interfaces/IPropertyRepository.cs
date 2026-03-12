@@ -10,6 +10,6 @@ namespace Insurance.Application.Interfaces
     public interface IPropertyRepository
     {
         Task AddAsync(Property property);
-
+        Task<Property?> GetByIdAsync(Guid id);
     }
 }

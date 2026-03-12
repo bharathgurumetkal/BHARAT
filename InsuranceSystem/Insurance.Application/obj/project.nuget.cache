@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "s/1A/fsKNuE=",
+  "dgSpecHash": "VnlzP2n1u8E=",
   "success": true,
   "projectFilePath": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Insurance.Application.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Bhara\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.3.9\\microsoft.aspnetcore.http.abstractions.2.3.9.nupkg.sha512",
+    "C:\\Users\\Bhara\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.3.0\\microsoft.aspnetcore.http.features.2.3.0.nupkg.sha512",
+    "C:\\Users\\Bhara\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\Bhara\\.nuget\\packages\\questpdf\\2026.2.3\\questpdf.2026.2.3.nupkg.sha512",
+    "C:\\Users\\Bhara\\.nuget\\packages\\system.text.encodings.web\\8.0.0\\system.text.encodings.web.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -2,6 +2,7 @@
 using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
 using Insurance.Domain.Enums;
+using Insurance.Application.DTOs.AuditLog;
 
 namespace Insurance.Application.Services;
 
@@ -13,6 +14,7 @@ public class AuthService : IAuthService
     private readonly ICustomerRepository _customerRepository;
     private readonly IAgentRepository _agentRepository;
     private readonly IClaimsOfficerRepository _claimsOfficerRepository;
+    private readonly IAuditLogService _auditLogService;
 
     public AuthService(
         IUserRepository userRepository,
@@ -20,7 +22,8 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         ICustomerRepository customerRepository,
         IAgentRepository agentRepository,
-        IClaimsOfficerRepository claimsOfficerRepository)
+        IClaimsOfficerRepository claimsOfficerRepository,
+        IAuditLogService auditLogService)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
@@ -28,6 +31,7 @@ public class AuthService : IAuthService
         _customerRepository = customerRepository;
         _agentRepository = agentRepository;
         _claimsOfficerRepository = claimsOfficerRepository;
+        _auditLogService = auditLogService;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -137,6 +141,14 @@ public class AuthService : IAuthService
             throw new Exception("Invalid credentials.");
 
         var token = _tokenService.GenerateToken(user);
+
+        await _auditLogService.LogAsync(new AuditLogEntry
+        {
+            Action = AuditAction.UserLogin.ToString(),
+            EntityType = "User",
+            EntityId = user.Id.ToString(),
+            Description = $"User {user.Email} logged in successfully."
+        });
 
         return new AuthResponseDto
         {

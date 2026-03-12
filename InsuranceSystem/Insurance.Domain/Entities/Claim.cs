@@ -7,9 +7,6 @@ using Insurance.Domain.Enums;
 
 namespace Insurance.Domain.Entities
 {
-
-
-
     public class Claim
     {
         public Guid Id { get; set; }
@@ -17,7 +14,7 @@ namespace Insurance.Domain.Entities
         public Guid PolicyId { get; set; }
         public Policy Policy { get; set; } = default!;
 
-        // Officer Assignment — set by Admin
+        // Officer Assignment — set by Admin, then locked to reviewer on StartReview
         public Guid? AssignedOfficerId { get; set; }
 
         public decimal ClaimAmount { get; set; }
@@ -27,7 +24,12 @@ namespace Insurance.Domain.Entities
         public ClaimStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        
+
+        // Review tracking — set when officer approves/rejects
+        public Guid? ReviewedByOfficerId { get; set; }
+        public DateTime? ReviewedAt { get; set; }
+        public string? ReviewRemarks { get; set; }   // mandatory on rejection
+
         // AI Analysis Fields
         public int? AiRiskScore { get; set; }
         public string? AiRiskLevel { get; set; }

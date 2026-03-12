@@ -281,4 +281,49 @@ export class ClaimListComponent implements OnInit {
       default: return 'bg-gray-50 text-gray-400 border-gray-100';
     }
   }
+
+  getTimelineSteps(claim: Claim) {
+    const steps = [
+      { id: 1, label: 'Claim Submitted', icon: 'send', status: 'pending' },
+      { id: 2, label: 'AI Risk Analysis', icon: 'psychology', status: 'pending' },
+      { id: 3, label: 'Under Review', icon: 'rate_review', status: 'pending' },
+      { id: 4, label: 'Final Decision', icon: 'gavel', status: 'pending' },
+      { id: 5, label: 'Settlement', icon: 'payments', status: 'pending' }
+    ];
+
+    // Current State Logic
+    if (claim.status === 'Submitted') {
+      steps[0].status = 'completed';
+      steps[1].status = 'active';
+    } else if (claim.status === 'UnderReview') {
+      steps[0].status = 'completed';
+      steps[1].status = 'completed';
+      steps[2].status = 'active';
+    } else if (claim.status === 'Approved' || claim.status === 'Rejected') {
+      steps[0].status = 'completed';
+      steps[1].status = 'completed';
+      steps[2].status = 'completed';
+      steps[3].status = 'completed';
+      steps[3].label = claim.status === 'Approved' ? 'Claim Approved' : 'Claim Rejected';
+      steps[3].icon = claim.status === 'Approved' ? 'task_alt' : 'cancel';
+      if (claim.status === 'Approved') steps[4].status = 'active';
+    } else if (claim.status === 'Settled') {
+      steps[0].status = 'completed';
+      steps[1].status = 'completed';
+      steps[2].status = 'completed';
+      steps[3].status = 'completed';
+      steps[3].label = 'Claim Approved';
+      steps[4].status = 'completed';
+    }
+
+    return steps;
+  }
+
+  getStepStatusClass(status: string): string {
+    switch (status) {
+      case 'completed': return 'bg-emerald-500 text-white shadow-emerald-100 ring-emerald-500';
+      case 'active': return 'bg-blue-600 text-white shadow-blue-100 ring-blue-600 animate-pulse';
+      default: return 'bg-gray-100 text-gray-400 ring-gray-200';
+    }
+  }
 }

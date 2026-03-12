@@ -319,76 +319,130 @@
     <!-- View Details Modal -->
     @if (showDetailsModal() && selectedClaim()) {
         <div class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-gray-950/40 backdrop-blur-md animate-in fade-in transition-all">
-            <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div class="p-10 lg:p-12">
-                    <div class="flex justify-between items-center mb-10">
-                        <div>
-                            <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Claim Details</div>
-                            <h3 class="text-2xl font-bold text-gray-900">Summary</h3>
-                        </div>
-                        <button (click)="closeDetailsModal()" class="p-2 text-gray-400 hover:text-gray-900 transition-colors">
-                            <span class="material-icons">close</span>
-                        </button>
+            <div class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                <!-- Header (Sticky) -->
+                <div class="px-10 py-8 lg:px-12 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <div>
+                        <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Claim Analysis & Progress</div>
+                        <h3 class="text-3xl font-bold text-gray-900">Claim #{{ selectedClaim()!.id.substring(0, 8).toUpperCase() }}</h3>
                     </div>
+                    <button (click)="closeDetailsModal()" class="p-3 bg-gray-50 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-2xl transition-all">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
 
-                    <div class="space-y-8">
-                        <div class="grid grid-cols-2 gap-8">
-                            <div>
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Policy Number</div>
-                                <div class="text-lg font-bold text-gray-900">{{ selectedClaim()!.policyNumber }}</div>
-                            </div>
-                            <div>
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount</div>
-                                <div class="text-lg font-bold text-emerald-600">{{ selectedClaim()!.claimAmount | currency:'INR' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-8">
-                            <div>
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Status</div>
-                                <span [class]="'px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border inline-block ' + getStatusClass(selectedClaim()!.status)">
-                                    {{ selectedClaim()!.status }}
-                                </span>
-                            </div>
-                            <div>
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Submitted On</div>
-                                <div class="text-lg font-bold text-gray-900">{{ selectedClaim()!.createdAt | date:'mediumDate' }}</div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Reason</div>
-                            <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-sm text-gray-600 leading-relaxed max-h-40 overflow-y-auto">
-                                {{ selectedClaim()!.reason }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Documents</div>
-                            @if (selectedClaim()!.documents && selectedClaim()!.documents.length > 0) {
-                                <div class="grid grid-cols-1 gap-3">
-                                    @for (doc of selectedClaim()!.documents; track $index; let i = $index) {
-                                        <a [href]="getDownloadUrl(doc.filePath)" target="_blank" class="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 flex items-center justify-between text-blue-700 transition-all">
-                                            <div class="flex items-center gap-3">
-                                                <span class="material-icons">attachment</span>
-                                                <div class="text-xs font-bold">{{ doc.fileName || 'Supporting Document ' + (i + 1) }}</div>
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto p-10 lg:p-12 space-y-10 custom-scrollbar">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+                        <!-- Left: Timeline Journey -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Tracking Journey</div>
+                            
+                            <div class="relative pl-8 space-y-10">
+                                <!-- Vertical Line Connector -->
+                                <div class="absolute left-[15px] top-2 bottom-2 w-0.5 bg-gray-100"></div>
+                                
+                                @for (step of getTimelineSteps(selectedClaim()!); track step.id; let last = $last) {
+                                    <div class="relative flex items-start gap-4 group">
+                                        <!-- Node -->
+                                        <div [class]="'absolute -left-[33px] w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all duration-500 ' + getStepStatusClass(step.status)">
+                                            @if (step.status === 'completed') {
+                                                <span class="material-icons text-sm">check</span>
+                                            } @else if (step.status === 'active') {
+                                                <span class="material-icons text-sm animate-pulse-slow">pending</span>
+                                            } @else {
+                                                <span class="text-[10px] font-bold">{{ step.id }}</span>
+                                            }
+                                        </div>
+                                        
+                                        <div>
+                                            <div [class]="'text-sm font-bold tracking-tight mb-0.5 ' + (step.status === 'pending' ? 'text-gray-400' : 'text-gray-900')">
+                                                {{ step.label }}
                                             </div>
-                                            <span class="material-icons text-sm">open_in_new</span>
-                                        </a>
-                                    }
+                                            <div class="text-[10px] font-medium text-gray-500">
+                                                {{ step.status === 'completed' ? 'Success' : (step.status === 'active' ? 'Current Action' : 'Awaiting phase') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Right: Details Cards -->
+                        <div class="lg:col-span-3 space-y-8">
+                            <!-- High Level Stats -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-5 rounded-3xl bg-blue-50/30 border border-blue-100/50">
+                                    <div class="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-2">Claim Amount</div>
+                                    <div class="text-xl font-bold text-gray-900">{{ selectedClaim()!.claimAmount | currency:'INR' }}</div>
                                 </div>
-                            } @else {
-                                <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-center">
-                                    <span class="material-icons text-gray-300 mb-2">description</span>
-                                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-tight">No attached documents</p>
+                                <div class="p-5 rounded-3xl bg-emerald-50/30 border border-emerald-100/50">
+                                    <div class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-2">Current Status</div>
+                                    <span [class]="'px-2 py-0.5 text-[9px] font-black uppercase rounded-md border ' + getStatusClass(selectedClaim()!.status)">
+                                        {{ selectedClaim()!.status }}
+                                    </span>
                                 </div>
-                            }
+                            </div>
+
+                            <!-- Policy Info -->
+                            <div class="p-6 rounded-3xl bg-gray-50 border border-gray-100">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Linked Policy</div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
+                                        <span class="material-icons text-blue-600">verified_user</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-900">{{ selectedClaim()!.policyProductName }}</div>
+                                        <div class="text-[10px] font-medium text-gray-500 tracking-wider">REF: {{ selectedClaim()!.policyNumber }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reason -->
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Incident Reason</div>
+                                <div class="p-6 bg-white rounded-3xl border border-gray-100 text-sm text-gray-600 leading-relaxed shadow-sm">
+                                    {{ selectedClaim()!.reason }}
+                                </div>
+                            </div>
+
+                            <!-- Documents -->
+                            <div>
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Attached Evidence</div>
+                                @if (selectedClaim()!.documents && selectedClaim()!.documents.length > 0) {
+                                    <div class="grid grid-cols-1 gap-2">
+                                        @for (doc of selectedClaim()!.documents; track $index; let i = $index) {
+                                            <a [href]="getDownloadUrl(doc.filePath)" target="_blank" class="p-4 bg-white hover:bg-blue-50 rounded-2xl border border-gray-100 flex items-center justify-between text-gray-700 transition-all hover:border-blue-200 group">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                                                        <span class="material-icons text-sm text-gray-400 group-hover:text-blue-600">attach_file</span>
+                                                    </div>
+                                                    <div class="text-xs font-bold">{{ doc.fileName || 'Claim Evidence ' + (i + 1) }}</div>
+                                                </div>
+                                                <span class="material-icons text-sm text-gray-300 group-hover:text-blue-600">open_in_new</span>
+                                            </a>
+                                        }
+                                    </div>
+                                } @else {
+                                    <div class="p-8 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200 text-center">
+                                        <span class="material-icons text-gray-300 mb-2">no_accounts</span>
+                                        <p class="text-[11px] font-bold text-gray-400 uppercase italic">No supporting documents found</p>
+                                    </div>
+                                }
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="mt-12">
-                        <button (click)="closeDetailsModal()" class="w-full btn-primary py-4 rounded-2xl">Close Details</button>
+                <!-- Footer (Sticky) -->
+                <div class="px-10 py-8 lg:px-12 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <div class="text-[10px] font-bold text-gray-400 italic">
+                        Submitted on {{ selectedClaim()!.createdAt | date:'longDate' }}
                     </div>
+                    <button (click)="closeDetailsModal()" class="w-full sm:w-auto btn-primary px-10 py-4 rounded-2xl h-auto">
+                        Acknowledged
+                    </button>
                 </div>
             </div>
         </div>

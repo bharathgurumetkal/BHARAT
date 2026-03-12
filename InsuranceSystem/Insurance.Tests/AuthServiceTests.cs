@@ -18,6 +18,7 @@ namespace Insurance.Tests
         private Mock<ICustomerRepository> _customerRepositoryMock;
         private Mock<IAgentRepository> _agentRepositoryMock;
         private Mock<IClaimsOfficerRepository> _claimsOfficerRepositoryMock;
+        private Mock<IAuditLogService> _auditLogServiceMock;
         private AuthService _authService;
 
         public AuthServiceTests()
@@ -28,6 +29,7 @@ namespace Insurance.Tests
             _customerRepositoryMock = new Mock<ICustomerRepository>();
             _agentRepositoryMock = new Mock<IAgentRepository>();
             _claimsOfficerRepositoryMock = new Mock<IClaimsOfficerRepository>();
+            _auditLogServiceMock = new Mock<IAuditLogService>();
 
             _authService = new AuthService(
                 _userRepositoryMock.Object,
@@ -35,7 +37,8 @@ namespace Insurance.Tests
                 _tokenServiceMock.Object,
                 _customerRepositoryMock.Object,
                 _agentRepositoryMock.Object,
-                _claimsOfficerRepositoryMock.Object
+                _claimsOfficerRepositoryMock.Object,
+                _auditLogServiceMock.Object
             );
         }
 

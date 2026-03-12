@@ -21,7 +21,9 @@ public class PolicyRepository : IPolicyRepository
 
     public async Task<Policy?> GetByIdAsync(Guid id)
     {
-        return await _context.Policies.FindAsync(id);
+        return await _context.Policies
+            .Include(p => p.Customer)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<List<Policy>> GetPoliciesByAgentAsync(Guid agentUserId)

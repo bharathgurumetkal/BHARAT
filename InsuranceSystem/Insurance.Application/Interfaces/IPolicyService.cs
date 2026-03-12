@@ -12,5 +12,7 @@ namespace Insurance.Application.Interfaces
         Task<Guid> CreatePolicyAsync(CreatePolicyDto dto, Guid agentId);
         Task<List<PolicyDto>> GetPoliciesByCustomerAsync(Guid customerUserId);
         Task<List<PolicyDto>> GetAllPoliciesAsync();
+        Task<RenewPolicyResponseDto> RenewPolicyAsync(Guid policyId, Guid customerUserId);
+        Task<PolicyDto?> GetPolicyByIdAsync(Guid policyId);
     }
 }

@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<PolicyApplication> PolicyApplications => Set<PolicyApplication>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Commission> Commissions => Set<Commission>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

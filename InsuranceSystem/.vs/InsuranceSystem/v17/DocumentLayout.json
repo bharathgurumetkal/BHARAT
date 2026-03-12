@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|solutionrelative:insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.application\\services\\claimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|solutionrelative:insurance.application\\services\\claimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.application\\interfaces\\iclaimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D5E6D345-C38B-4A58-98A7-B0C7B597483E}|Insurance.Application\\Insurance.Application.csproj|solutionrelative:insurance.application\\interfaces\\iclaimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED79DCED-9B53-4EE6-8C2B-87A748227F64}|Insurance.API\\Insurance.API.csproj|solutionrelative:insurance.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6A242B19-A020-4FF8-9667-46472B9A73CF}|Insurance.Domain\\Insurance.Domain.csproj|c:\\users\\bhara\\desktop\\capstone\\insurancesystem\\insurance.domain\\entities\\property.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -90,7 +90,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Bookmark",
@@ -110,7 +110,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ClaimService.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Services\\ClaimService.cs",
               "RelativeDocumentMoniker": "Insurance.Application\\Services\\ClaimService.cs",
@@ -118,12 +118,11 @@
               "RelativeToolTip": "Insurance.Application\\Services\\ClaimService.cs",
               "ViewState": "AgIAABkAAAAAAAAAAAAmwCsAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T00:33:29.312Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-05T00:33:29.312Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "IClaimService.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.Application\\Interfaces\\IClaimService.cs",
               "RelativeDocumentMoniker": "Insurance.Application\\Interfaces\\IClaimService.cs",
@@ -171,6 +170,19 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
+              "RelativeDocumentMoniker": "Insurance.API\\Program.cs",
+              "ToolTip": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
+              "RelativeToolTip": "Insurance.API\\Program.cs",
+              "ViewState": "AgIAAKAAAAAAAAAAAAAkwLIAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-24T17:03:23.702Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 7,
               "Title": "CustomerController.cs",
               "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Controllers\\CustomerController.cs",
@@ -192,18 +204,6 @@
               "ViewState": "AgIAACEAAAAAAAAAAAAuwCwAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-25T11:38:27.403Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
-              "RelativeDocumentMoniker": "Insurance.API\\Program.cs",
-              "ToolTip": "C:\\Users\\Bhara\\Desktop\\Capstone\\InsuranceSystem\\Insurance.API\\Program.cs",
-              "RelativeToolTip": "Insurance.API\\Program.cs",
-              "ViewState": "AgIAAF4AAAAAAAAAAAAQwF4AAAA7AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-24T17:03:23.702Z"
             },
             {
               "$type": "Document",

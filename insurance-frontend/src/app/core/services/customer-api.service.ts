@@ -39,4 +39,15 @@ export class CustomerApiService {
   submitClaim(request: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/submit-claim`, request);
   }
+
+  renewPolicy(policyId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/renew-policy/${policyId}`, {});
+  }
+
+  downloadDocument(policyId: string, type: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/download-policy/${policyId}`, {
+      params: { type },
+      responseType: 'blob'
+    });
+  }
 }

@@ -15,6 +15,7 @@ public class AiClaimClient : IAiClaimClient
     public AiClaimClient(IHttpClientFactory httpClientFactory, ILogger<AiClaimClient> logger)
     {
         _httpClient = httpClientFactory.CreateClient("AiService");
+        _httpClient.Timeout = TimeSpan.FromSeconds(5); // Prevent 100s hangs if AI service is down
         _logger = logger;
     }
 

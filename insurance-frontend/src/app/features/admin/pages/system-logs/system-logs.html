@@ -1,0 +1,227 @@
+<div class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+  <!-- ════════ HEADER ════════ -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center">
+          <span class="material-icons text-white text-sm">terminal</span>
+        </div>
+        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin · PropertyTrust</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">System Audit Trail</h1>
+      <p class="text-sm text-slate-400 font-medium mt-0.5">Every security-critical action logged — immutable, chronological.</p>
+    </div>
+    <button (click)="loadLogs()" [disabled]="isLoading()"
+      class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl transition-all active:scale-95 disabled:opacity-50 shrink-0 shadow-sm">
+      <span class="material-icons text-sm" [class.animate-spin]="isLoading()">sync</span>
+      {{ isLoading() ? 'Syncing...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <!-- ════════ STAT CHIPS ════════ -->
+  @if (!isLoading()) {
+    <div class="flex flex-wrap gap-3">
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+        <span class="text-[11px] font-black text-slate-500 uppercase tracking-widest">Total</span>
+        <span class="text-sm font-black text-slate-900">{{ stats.total }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-2xl shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <span class="text-[11px] font-black text-blue-500 uppercase tracking-widest">Today</span>
+        <span class="text-sm font-black text-blue-600">{{ stats.today }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-100 rounded-2xl shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Approvals</span>
+        <span class="text-sm font-black text-emerald-700">{{ stats.approved }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-100 rounded-2xl shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+        <span class="text-[11px] font-black text-red-500 uppercase tracking-widest">Rejections</span>
+        <span class="text-sm font-black text-red-600">{{ stats.critical }}</span>
+      </div>
+      <div class="ml-auto flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
+        <span class="material-icons text-xs opacity-50">lock</span>
+        Tamper-proof · Read-only log
+      </div>
+    </div>
+
+    <!-- ════════ FILTER BAR ════════ -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center shadow-sm">
+      <!-- Search -->
+      <div class="relative flex-1">
+        <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+        <input type="text"
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)"
+          placeholder="Search by email, action, entity, IP..."
+          class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-300 focus:bg-white text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all" />
+      </div>
+
+      <!-- Action filter -->
+      <div class="relative min-w-[160px]">
+        <select [value]="selectedAction()" (change)="selectedAction.set($any($event.target).value)"
+          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-slate-300 appearance-none cursor-pointer transition-all pr-8">
+          @for (a of uniqueActions; track a) { <option [value]="a">{{ a }}</option> }
+        </select>
+        <span class="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">expand_more</span>
+      </div>
+
+      <!-- Role filter -->
+      <div class="relative min-w-[140px]">
+        <select [value]="selectedRole()" (change)="selectedRole.set($any($event.target).value)"
+          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-slate-300 appearance-none cursor-pointer transition-all pr-8">
+          @for (r of uniqueRoles; track r) { <option [value]="r">{{ r }}</option> }
+        </select>
+        <span class="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">expand_more</span>
+      </div>
+
+      @if (searchTerm() || selectedAction() !== 'All' || selectedRole() !== 'All') {
+        <button (click)="clearFilters()" class="px-4 py-2.5 text-xs font-black text-red-500 hover:bg-red-50 rounded-xl border border-red-100 transition-all whitespace-nowrap">
+          ✕ Clear
+        </button>
+      }
+
+      <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest whitespace-nowrap self-center">
+        {{ filteredLogs.length }} result{{ filteredLogs.length !== 1 ? 's' : '' }}
+      </div>
+    </div>
+  }
+
+  <!-- ════════ LOADING ════════ -->
+  @if (isLoading()) {
+    <div class="space-y-2.5">
+      @for (i of [1,2,3,4,5,6,7]; track i) {
+        <div class="h-[72px] bg-slate-100 animate-pulse rounded-2xl"></div>
+      }
+    </div>
+  }
+
+  <!-- ════════ LOG CARDS FEED ════════ -->
+  @if (!isLoading() && filteredLogs.length > 0) {
+    <div class="space-y-2">
+      @for (log of filteredLogs; track log.id; let isLast = $last) {
+
+        <!-- Log Card -->
+        <div class="bg-white border rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
+             [class.border-slate-200]="expandedLogId() !== log.id"
+             [class.border-indigo-200]="expandedLogId() === log.id"
+             [class.shadow-sm]="expandedLogId() !== log.id">
+
+          <!-- Top Row: Click to Expand -->
+          <div class="flex items-center gap-0 cursor-pointer" (click)="toggleExpand(log.id)">
+
+            <!-- Left Accent Bar -->
+            <div class="w-1 self-stretch rounded-l-2xl shrink-0"
+                 [class]="getActionStyle(log.action).leftBar"></div>
+
+            <!-- Icon -->
+            <div class="px-4 py-4 shrink-0">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center border text-sm"
+                   [class]="getActionStyle(log.action).badge">
+                <span class="material-icons text-sm">{{ getActionStyle(log.action).icon }}</span>
+              </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 py-4 pr-4 min-w-0">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1">
+                <!-- Action Tag -->
+                <span class="text-[11px] font-black text-slate-900 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-lg">
+                  {{ log.action || 'SYSTEM_EVENT' }}
+                </span>
+                <!-- Role Badge -->
+                <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" [class]="getRoleStyle(log.userRole)">
+                  {{ log.userRole || 'SYSTEM' }}
+                </span>
+                <!-- Entity -->
+                @if (log.entityType) {
+                  <span class="text-[10px] text-slate-500 font-semibold">
+                    on <span class="text-slate-700 font-black">{{ log.entityType }}</span>
+                  </span>
+                }
+              </div>
+              <!-- Description -->
+              <p class="text-xs text-slate-500 font-medium leading-relaxed truncate max-w-2xl">
+                {{ log.description || log.userEmail || 'No description recorded.' }}
+              </p>
+            </div>
+
+            <!-- Right: Time + IP -->
+            <div class="flex flex-col items-end gap-1 px-5 py-4 text-right shrink-0 border-l border-slate-100">
+              <span class="text-[11px] font-black text-slate-800">{{ getTimeAgo(log.createdAt) }}</span>
+              <span class="text-[9px] text-slate-400 font-mono">{{ log.createdAt | date:'d MMM yy · HH:mm' : '+0530' }}</span>
+              @if (log.ipAddress) {
+                <span class="text-[9px] text-slate-400 font-mono">{{ log.ipAddress }}</span>
+              }
+              <span class="material-icons text-[14px] text-slate-300 mt-1">
+                {{ expandedLogId() === log.id ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Expanded Detail Panel -->
+          @if (expandedLogId() === log.id) {
+            <div class="border-t border-indigo-100 bg-gradient-to-r from-indigo-50/50 to-white px-5 py-5 grid grid-cols-2 md:grid-cols-4 gap-5 animate-in fade-in slide-in-from-top-1 duration-150">
+
+              <div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Log ID</div>
+                <div class="text-[11px] font-mono text-slate-700 break-all bg-white border border-slate-100 rounded-xl px-3 py-2">{{ log.id || '—' }}</div>
+              </div>
+
+              <div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Performed By</div>
+                <div class="text-[11px] font-mono text-slate-700 break-all bg-white border border-slate-100 rounded-xl px-3 py-2">{{ log.userEmail || log.userId || 'Internal Process' }}</div>
+              </div>
+
+              <div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Entity ID</div>
+                <div class="text-[11px] font-mono text-slate-700 break-all bg-white border border-slate-100 rounded-xl px-3 py-2">{{ log.entityId || 'N/A' }}</div>
+              </div>
+
+              <div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Exact Timestamp</div>
+                <div class="text-[11px] font-mono text-slate-700 bg-white border border-slate-100 rounded-xl px-3 py-2">{{ log.createdAt | date:'d MMM y, HH:mm:ss' : '+0530' }} IST</div>
+              </div>
+
+              @if (log.description) {
+                <div class="col-span-2 md:col-span-4">
+                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Full Event Description</div>
+                  <div class="text-sm text-slate-700 font-medium leading-relaxed bg-white border border-slate-100 rounded-xl px-4 py-3">
+                    {{ log.description }}
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between text-[10px] text-slate-400 font-medium px-1">
+      <span>Showing <strong class="text-slate-600">{{ filteredLogs.length }}</strong> of <strong class="text-slate-600">{{ logs().length }}</strong> events</span>
+      <span>Sorted: newest first · IST timestamps (UTC+5:30)</span>
+    </div>
+  }
+
+  <!-- ════════ EMPTY STATE ════════ -->
+  @if (!isLoading() && filteredLogs.length === 0) {
+    <div class="bg-white py-24 rounded-3xl border border-slate-200 text-center shadow-sm">
+      <div class="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <span class="material-icons text-slate-300 text-3xl">manage_search</span>
+      </div>
+      <h3 class="text-lg font-black text-slate-900 mb-2">No Events Found</h3>
+      <p class="text-sm text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
+        No audit logs match your current search or filters.
+      </p>
+      <button (click)="clearFilters()" class="mt-6 px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-slate-800 transition-all">
+        Clear Filters
+      </button>
+    </div>
+  }
+
+</div>

@@ -15,6 +15,7 @@ export class PolicyListComponent implements OnInit {
   policies = signal<Policy[]>([]);
   isLoading = signal(true);
   isPaying = signal(false);
+  isRenewing = signal<string | null>(null);
   showSuccessModal = signal(false);
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
@@ -61,6 +62,29 @@ export class PolicyListComponent implements OnInit {
     });
   }
 
+  renewPolicy(policyId: string): void {
+    if (this.isRenewing() === policyId) return;
+
+    if (!confirm("Are you sure you want to renew this policy?")) return;
+
+    this.isRenewing.set(policyId);
+    this.successMessage.set(null);
+    this.errorMessage.set(null);
+
+    this.customerService.renewPolicy(policyId).subscribe({
+      next: (res) => {
+        this.successMessage.set("Policy renewed successfully for the next period.");
+        this.isRenewing.set(null);
+        this.showSuccessModal.set(true);
+        this.loadPolicies();
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || "Renewal failed.");
+        this.isRenewing.set(null);
+      }
+    });
+  }
+
   closeModal(): void {
     this.showSuccessModal.set(false);
     this.successMessage.set(null);
@@ -88,5 +112,33 @@ export class PolicyListComponent implements OnInit {
   isExpired(endDate: string | null): boolean {
     if (!endDate) return false;
     return new Date(endDate) < new Date();
+  }
+
+  isEligibleForRenewal(policy: Policy): boolean {
+    if (policy.status === 'Cancelled' || policy.status === 'Draft') return false;
+    if (policy.status === 'Expired') return true;
+    if (policy.endDate) {
+      const daysLeft = this.getRemainingDays(policy.endDate);
+      return daysLeft <= 15;
+    }
+    return false;
+  }
+
+  downloadPolicyDocument(policyId: string, type: string) {
+    this.customerService.downloadDocument(policyId, type).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}_${policyId.substring(0, 8)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      },
+      error: (err) => {
+        this.errorMessage.set("Failed to download document.");
+      }
+    });
   }
 }

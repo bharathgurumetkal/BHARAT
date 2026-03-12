@@ -18,6 +18,7 @@ namespace Insurance.Tests
         private Mock<IAiClaimClient> _aiClaimClientMock;
         private Mock<INotificationService> _notificationServiceMock;
         private Mock<IUserRepository> _userRepositoryMock;
+        private Mock<IAuditLogService> _auditLogServiceMock;
         private ClaimService _claimService;
 
         public ClaimServiceTests()
@@ -27,13 +28,15 @@ namespace Insurance.Tests
             _aiClaimClientMock = new Mock<IAiClaimClient>();
             _notificationServiceMock = new Mock<INotificationService>();
             _userRepositoryMock = new Mock<IUserRepository>();
+            _auditLogServiceMock = new Mock<IAuditLogService>();
 
             _claimService = new ClaimService(
                 _claimRepositoryMock.Object,
                 _policyRepositoryMock.Object,
                 _aiClaimClientMock.Object,
                 _notificationServiceMock.Object,
-                _userRepositoryMock.Object
+                _userRepositoryMock.Object,
+                _auditLogServiceMock.Object
             );
         }
 
@@ -91,7 +94,7 @@ namespace Insurance.Tests
             var claim = new Claim { Id = claimId, Status = ClaimStatus.Submitted };
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(claimId)).ReturnsAsync(claim);
 
-            await _claimService.StartReviewAsync(claimId);
+            await _claimService.StartReviewAsync(claimId, Guid.NewGuid());
 
             Assert.Equal(ClaimStatus.UnderReview, claim.Status);
             _claimRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -102,7 +105,7 @@ namespace Insurance.Tests
         {
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Claim)null);
 
-            await Assert.ThrowsAsync<Exception>(() => _claimService.StartReviewAsync(Guid.NewGuid()));
+            await Assert.ThrowsAsync<Exception>(() => _claimService.StartReviewAsync(Guid.NewGuid(), Guid.NewGuid()));
         }
 
         [Fact]
@@ -113,7 +116,7 @@ namespace Insurance.Tests
             var claim = new Claim { Id = claimId, Status = ClaimStatus.UnderReview };
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(claimId)).ReturnsAsync(claim);
 
-            await Assert.ThrowsAsync<Exception>(() => _claimService.StartReviewAsync(claimId));
+            await Assert.ThrowsAsync<Exception>(() => _claimService.StartReviewAsync(claimId, Guid.NewGuid()));
         }
 
         // ─── ReviewClaimAsync ─────────────────────────────────────────────────────
@@ -125,7 +128,7 @@ namespace Insurance.Tests
             var claim = new Claim { Id = claimId, Status = ClaimStatus.UnderReview, ClaimAmount = 1000 };
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(claimId)).ReturnsAsync(claim);
 
-            await _claimService.ReviewClaimAsync(claimId, true);
+            await _claimService.ReviewClaimAsync(claimId, Guid.NewGuid(), true);
 
             Assert.Equal(ClaimStatus.Approved, claim.Status);
             _claimRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -139,7 +142,7 @@ namespace Insurance.Tests
             var claim = new Claim { Id = claimId, Status = ClaimStatus.UnderReview, ClaimAmount = 5000 };
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(claimId)).ReturnsAsync(claim);
 
-            await _claimService.ReviewClaimAsync(claimId, false);
+            await _claimService.ReviewClaimAsync(claimId, Guid.NewGuid(), false, "Test rejection reason");
 
             Assert.Equal(ClaimStatus.Rejected, claim.Status);
             _notificationServiceMock.Verify(n => n.CreateAsync(It.IsAny<Guid>(), "Claim Rejected", It.IsAny<string>(), "Risk"), Times.Once);
@@ -150,7 +153,7 @@ namespace Insurance.Tests
         {
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Claim)null);
 
-            await Assert.ThrowsAsync<Exception>(() => _claimService.ReviewClaimAsync(Guid.NewGuid(), true));
+            await Assert.ThrowsAsync<Exception>(() => _claimService.ReviewClaimAsync(Guid.NewGuid(), Guid.NewGuid(), true));
         }
 
         [Fact]
@@ -160,7 +163,7 @@ namespace Insurance.Tests
             var claim = new Claim { Id = claimId, Status = ClaimStatus.Submitted };
             _claimRepositoryMock.Setup(r => r.GetByIdAsync(claimId)).ReturnsAsync(claim);
 
-            await Assert.ThrowsAsync<Exception>(() => _claimService.ReviewClaimAsync(claimId, true));
+            await Assert.ThrowsAsync<Exception>(() => _claimService.ReviewClaimAsync(claimId, Guid.NewGuid(), true));
         }
 
         // ─── SubmitClaimAsync ─────────────────────────────────────────────────────
