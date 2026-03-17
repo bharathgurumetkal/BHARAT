@@ -17,61 +17,83 @@ public class ClaimsOfficerController : ControllerBase
         _claimService = claimService;
     }
 
+    private Guid CurrentOfficerUserId =>
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
     /// <summary>
-    /// Returns only the claims assigned to the currently logged-in officer.
+    /// Returns claims visible to this officer:
+    ///  - All Submitted and UnderReview claims (available to process)
+    ///  - Any claims explicitly assigned to this officer
     /// </summary>
     [HttpGet("claims")]
     public async Task<IActionResult> GetClaims()
     {
-        var officerUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var claims = await _claimService.GetClaimsByOfficerAsync(officerUserId);
+        var claims = await _claimService.GetClaimsByOfficerAsync(CurrentOfficerUserId);
         return Ok(claims);
     }
 
     /// <summary>
-    /// Dashboard summary — counts only this officer's assigned claims.
+    /// Dashboard summary for this officer's workload.
     /// </summary>
     [HttpGet("dashboard-summary")]
     public async Task<IActionResult> GetDashboardSummary()
     {
-        var officerUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var summary = await _claimService.GetClaimsOfficerDashboardSummaryAsync(officerUserId);
+        var summary = await _claimService.GetClaimsOfficerDashboardSummaryAsync(CurrentOfficerUserId);
         return Ok(summary);
     }
 
     /// <summary>
-    /// Move a claim from Submitted → UnderReview.
-    /// Must be called before review (approve/reject).
+    /// Atomically locks the claim to this officer and moves it to UnderReview.
+    /// Handles both Submitted and auto-fraud-flagged (already UnderReview) claims.
+    /// Prevents race conditions — if another officer has already locked it, returns 409.
     /// </summary>
     [HttpPost("start-review")]
     public async Task<IActionResult> StartReview([FromQuery] Guid claimId)
     {
-        await _claimService.StartReviewAsync(claimId);
-        return Ok(new { Message = "Claim is now under review." });
+        try
+        {
+            await _claimService.StartReviewAsync(claimId, CurrentOfficerUserId);
+            return Ok(new { Message = "Claim locked to you and is now under review." });
+        }
+        catch (Exception ex) when (ex.Message.Contains("another officer"))
+        {
+            return Conflict(new { Message = ex.Message });
+        }
     }
 
     /// <summary>
-    /// Review claim (approve or reject). Claim must be UnderReview.
-    /// Transitions: UnderReview → Approved | Rejected
+    /// Approve or reject a claim. Must be UnderReview.
+    /// Only the assigned officer can make this decision.
+    /// Rejection requires a non-empty remarks/reason (regulatory requirement).
     /// </summary>
     [HttpPost("review")]
     public async Task<IActionResult> ReviewClaim(
         [FromQuery] Guid claimId,
-        [FromQuery] bool approve)
+        [FromQuery] bool approve,
+        [FromQuery] string? remarks = null)
     {
-        await _claimService.ReviewClaimAsync(claimId, approve);
-
-        return Ok(new
+        try
         {
-            Message = approve
-                ? "Claim approved successfully."
-                : "Claim rejected successfully."
-        });
+            await _claimService.ReviewClaimAsync(claimId, CurrentOfficerUserId, approve, remarks);
+            return Ok(new
+            {
+                Message = approve
+                    ? "Claim approved successfully."
+                    : "Claim rejected successfully."
+            });
+        }
+        catch (Exception ex) when (ex.Message.Contains("not the assigned officer"))
+        {
+            return Forbid();
+        }
+        catch (Exception ex) when (ex.Message.Contains("rejection reason"))
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
     }
 
     /// <summary>
-    /// Settle an approved claim. Only Approved claims can be settled.
-    /// Transitions: Approved → Settled
+    /// Settle an approved claim. Transitions: Approved → Settled.
     /// </summary>
     [HttpPost("settle")]
     public async Task<IActionResult> Settle([FromQuery] Guid claimId)

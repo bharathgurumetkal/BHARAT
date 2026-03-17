@@ -75,6 +75,7 @@ namespace Insurance.API
             // -----------------------------
             // Dependency Injection
             // -----------------------------
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -104,6 +105,9 @@ namespace Insurance.API
             builder.Services.AddScoped<IAiClaimClient, AiClaimClient>();
             builder.Services.AddScoped<IPolicyApplicationService, PolicyApplicationService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+            builder.Services.AddScoped<IPolicyDocumentService, PolicyDocumentService>();
 
             // -----------------------------
             // Swagger + JWT Support

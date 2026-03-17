@@ -1,14 +1,14 @@
 <div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
     <div>
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">My Applications</h1>
-        <p class="text-gray-500 font-medium">Track the status of your insurance policy applications.</p>
+        <p class="text-gray-500 font-medium">Track the status of your insurance policy applications in real time.</p>
     </div>
 
     <!-- Loading State -->
     @if (isLoading()) {
         <div class="space-y-4">
             @for (i of [1,2,3]; track i) {
-                <div class="h-28 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
+                <div class="h-36 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
             }
         </div>
     }
@@ -29,47 +29,144 @@
     @if (!isLoading() && applications().length > 0) {
         <div class="grid gap-6">
             @for (app of applications(); track app.id) {
-                <div class="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm hover:border-blue-100 transition-all">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div class="flex items-center gap-6">
-                            <div class="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center border border-gray-100">
-                                <span class="material-icons">article</span>
+                <div class="bg-white p-6 lg:p-8 rounded-3xl border shadow-sm transition-all"
+                     [ngClass]="{
+                       'border-red-100 bg-red-50/20': app.status === 'RejectedByAgent',
+                       'border-emerald-100 bg-emerald-50/20': app.status === 'ApprovedByAgent',
+                       'border-gray-100 hover:border-blue-100': app.status !== 'RejectedByAgent' && app.status !== 'ApprovedByAgent'
+                     }">
+
+                    <!-- Header Row -->
+                    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
+                        <div class="flex items-start gap-4">
+                            <!-- Icon -->
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0"
+                                 [ngClass]="{
+                                   'bg-emerald-50 border-emerald-100 text-emerald-600': app.status === 'ApprovedByAgent',
+                                   'bg-red-50 border-red-100 text-red-500': app.status === 'RejectedByAgent',
+                                   'bg-blue-50 border-blue-100 text-blue-600': app.status === 'Submitted' || app.status === 'AssignedToAgent'
+                                 }">
+                                <span class="material-icons">
+                                    {{ app.status === 'ApprovedByAgent' ? 'verified' : app.status === 'RejectedByAgent' ? 'cancel' : 'article' }}
+                                </span>
                             </div>
                             <div>
-                                <div class="flex items-center gap-3 mb-1">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
                                     <span class="text-lg font-bold text-gray-900">{{ app.productName }}</span>
-                                    <span [class]="'px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border ' + getStatusClass(app.status)">
-                                        {{ app.status }}
+                                    <span [class]="'px-3 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full border ' + getStatusClass(app.status)">
+                                        {{ getStatusLabel(app.status) }}
                                     </span>
                                 </div>
-                                <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm font-medium text-gray-400">
-                                    <span class="flex items-center gap-1">
-                                        Market Value: <span class="text-gray-700">{{ app.marketValue | currency }}</span>
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        Submitted: <span class="text-gray-700">{{ app.submittedAt | date:'mediumDate' }}</span>
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        Monthly Premium: <span class="text-blue-600 font-bold">{{ app.calculatedPremium | currency }}</span>
-                                    </span>
+                                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-gray-400">
+                                    <span>Market Value: <span class="text-gray-700 font-bold">{{ app.marketValue | currency:'INR' }}</span></span>
+                                    <span>Premium: <span class="text-blue-600 font-bold">{{ app.calculatedPremium | currency:'INR' }}/yr</span></span>
+                                    <span>Submitted: <span class="text-gray-600">{{ app.submittedAt | date:'dd MMM yyyy' : '+0530' }}</span></span>
+                                    @if (app.assignedAgentName) {
+                                        <span>Agent: <span class="text-gray-700">{{ app.assignedAgentName }}</span></span>
+                                    }
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex flex-col lg:items-end gap-1">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Detail</div>
-                            @if (app.status === 'Submitted') { <div class="text-sm font-semibold text-blue-600">Awaiting Agent Assignment</div> }
-                            @if (app.status === 'AssignedToAgent') { <div class="text-sm font-semibold text-purple-600">Under Review by Agent</div> }
-                            @if (app.status === 'ApprovedByAgent') { <div class="text-sm font-semibold text-emerald-600">Approve! Check Policies to Pay</div> }
-                            @if (app.status === 'RejectedByAgent') { <div class="text-sm font-semibold text-red-600">Application not successful</div> }
-                            
-                            @if (app.assignedAgentName) {
-                                <div class="text-[10px] text-gray-400 font-medium">
-                                    Agent: <span class="text-gray-600">{{ app.assignedAgentName }}</span>
+                        <!-- Re-apply button for rejected -->
+                        @if (app.status === 'RejectedByAgent') {
+                            <a routerLink="/customer/products"
+                               class="shrink-0 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors">
+                                <span class="material-icons text-sm">refresh</span>
+                                Apply Again
+                            </a>
+                        }
+                        @if (app.status === 'ApprovedByAgent') {
+                            <a routerLink="/customer/policies"
+                               class="shrink-0 flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                                <span class="material-icons text-sm">open_in_new</span>
+                                View Policy
+                            </a>
+                        }
+                    </div>
+
+                    <!-- 3-Step Progress Stepper -->
+                    <div class="w-full">
+                        <div class="flex items-center">
+
+                            <!-- Step 1: Submitted -->
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black"
+                                     [ngClass]="getStepClass(app.status, 1)">
+                                    <span class="material-icons text-sm" *ngIf="isStepDone(app.status, 1)">check</span>
+                                    <span *ngIf="!isStepDone(app.status, 1)">1</span>
                                 </div>
-                            }
+                                <div class="text-[9px] font-black uppercase tracking-widest mt-1.5 text-center"
+                                     [ngClass]="{'text-indigo-600': isStepActive(app.status, 1), 'text-gray-400': !isStepActive(app.status, 1)}">
+                                    Submitted
+                                </div>
+                            </div>
+
+                            <!-- Connector 1→2 -->
+                            <div class="flex-1 h-0.5 mx-2"
+                                 [ngClass]="app.status === 'Submitted' ? 'bg-gray-200' : 'bg-indigo-400'"></div>
+
+                            <!-- Step 2: Under Review -->
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black"
+                                     [ngClass]="getStepClass(app.status, 2)">
+                                    <span class="material-icons text-sm" *ngIf="isStepDone(app.status, 2)">check</span>
+                                    <span *ngIf="!isStepDone(app.status, 2)">2</span>
+                                </div>
+                                <div class="text-[9px] font-black uppercase tracking-widest mt-1.5 text-center"
+                                     [ngClass]="{'text-indigo-600': isStepActive(app.status, 2), 'text-gray-400': !isStepActive(app.status, 2)}">
+                                    Under Review
+                                </div>
+                            </div>
+
+                            <!-- Connector 2→3 -->
+                            <div class="flex-1 h-0.5 mx-2"
+                                 [ngClass]="(app.status === 'ApprovedByAgent' || app.status === 'RejectedByAgent') ? (app.status === 'ApprovedByAgent' ? 'bg-emerald-400' : 'bg-red-300') : 'bg-gray-200'"></div>
+
+                            <!-- Step 3: Decision -->
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black"
+                                     [ngClass]="getStepClass(app.status, 3)">
+                                    <span class="material-icons text-sm" *ngIf="app.status === 'ApprovedByAgent'">check</span>
+                                    <span class="material-icons text-sm" *ngIf="app.status === 'RejectedByAgent'">close</span>
+                                    <span *ngIf="app.status !== 'ApprovedByAgent' && app.status !== 'RejectedByAgent'">3</span>
+                                </div>
+                                <div class="text-[9px] font-black uppercase tracking-widest mt-1.5 text-center"
+                                     [ngClass]="{
+                                       'text-emerald-600': app.status === 'ApprovedByAgent',
+                                       'text-red-500': app.status === 'RejectedByAgent',
+                                       'text-gray-400': app.status !== 'ApprovedByAgent' && app.status !== 'RejectedByAgent'
+                                     }">
+                                    Decision
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+
+                    <!-- Rejection Reason Banner -->
+                    @if (app.status === 'RejectedByAgent') {
+                        <div class="mt-5 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                            <span class="material-icons text-red-400 text-sm mt-0.5">info</span>
+                            <div>
+                                <div class="text-xs font-black text-red-600 uppercase tracking-wider mb-0.5">Reason for Rejection</div>
+                                <p class="text-sm text-red-700 font-medium">
+                                    Your application did not meet the underwriting criteria based on the property risk profile submitted. Please review your property details and re-apply with accurate information.
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Approved Action Banner -->
+                    @if (app.status === 'ApprovedByAgent') {
+                        <div class="mt-5 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3">
+                            <span class="material-icons text-emerald-500">check_circle</span>
+                            <p class="text-sm text-emerald-700 font-semibold">
+                                Your application has been approved! Go to <strong>My Policies</strong> to complete payment and activate your coverage.
+                            </p>
+                        </div>
+                    }
+
                 </div>
             }
         </div>

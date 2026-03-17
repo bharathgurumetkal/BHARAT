@@ -10,4 +10,9 @@
     <ProjectReference Include="..\Insurance.Domain\Insurance.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
+    <PackageReference Include="QuestPDF" Version="2026.2.3" />
+  </ItemGroup>
+
 </Project>

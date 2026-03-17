@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Insurance.Domain.Entities;
 
 namespace Insurance.Infrastructure.Data;
@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<PolicyApplication> PolicyApplications => Set<PolicyApplication>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Commission> Commissions => Set<Commission>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -181,5 +182,19 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Commission>()
             .Property(c => c.CommissionAmount)
             .HasPrecision(18, 2);
+
+        // Global UTC DateTime conversion to fix timezone issues
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                        v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+                }
+            }
+        }
     }
 }

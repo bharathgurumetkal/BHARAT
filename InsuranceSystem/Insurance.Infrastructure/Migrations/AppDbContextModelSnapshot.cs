@@ -45,6 +45,55 @@ namespace Insurance.Infrastructure.Migrations
                     b.ToTable("Agents");
                 });
 
+            modelBuilder.Entity("Insurance.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserRole")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("Insurance.Domain.Entities.Claim", b =>
                 {
                     b.Property<Guid>("Id")
@@ -85,6 +134,15 @@ namespace Insurance.Infrastructure.Migrations
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReviewRemarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ReviewedByOfficerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -178,6 +236,24 @@ namespace Insurance.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("AiChurnProbability")
+                        .HasColumnType("float");
+
+                    b.Property<string>("AiExplanation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AiLastAnalyzedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AiLikelihood")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AiRecommendedAction")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AiRenewalScore")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("AssignedAgentId")
                         .HasColumnType("uniqueidentifier");

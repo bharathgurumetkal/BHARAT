@@ -45,5 +45,9 @@ export class AgentService {
   getCommissions(): Observable<Commission[]> {
     return this.http.get<Commission[]>(`${this.apiUrl}/commissions`);
   }
+
+  getSmartProspecting(forceRefresh: boolean = false): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/smart-prospecting?forceRefresh=${forceRefresh}`);
+  }
 }
 

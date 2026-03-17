@@ -44,7 +44,7 @@
                         </span>
                     </div>
                     <p class="text-xs text-gray-400 font-medium italic mb-1">{{ claim.reason }}</p>
-                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-2">Requested: {{ claim.claimAmount | currency }} • Filed {{ claim.createdAt | date:'shortDate' }}</div>
+                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-2">Requested: {{ claim.claimAmount | currency }} • Filed {{ claim.createdAt | date:'shortDate' : '+0530' }}</div>
                     
                     <!-- Documents List -->
                     <div *ngIf="claim.documents && claim.documents.length > 0" class="flex flex-wrap gap-2 mt-2">

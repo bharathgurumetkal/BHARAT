@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CustomerApiService } from '../../../../core/services/customer-api.service';
 import { AdminApiService } from '../../../../core/services/admin-api.service';
@@ -30,9 +30,18 @@ interface ActivityItem {
 export class DashboardComponent implements OnInit {
   role: string | null = null;
   userName: string | null = null;
+  userEmail: string | null = null;
   
   stats: DashboardStat[] = [];
   recentActivity: ActivityItem[] = [];
+  
+  // New Customer Specific Data
+  activeCoverage = signal<number>(0);
+  upcomingRenewals = signal<number>(0);
+  pendingItemsCount = signal<number>(0);
+  assignedAgentName = signal<string | null>(null);
+  propertyBreakdown = signal<{type: string, count: number}[]>([]);
+  
   isLoading = true;
   errorMessage: string | null = null;
 
@@ -46,8 +55,12 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.role = localStorage.getItem('role');
-    const email = localStorage.getItem('email');
-    this.userName = email ? email.split('@')[0] : 'User';
+    this.userEmail = localStorage.getItem('email');
+    this.userName = this.userEmail ? this.userEmail.split('@')[0] : 'User';
+    // Capitalize first letter
+    if (this.userName) {
+      this.userName = this.userName.charAt(0).toUpperCase() + this.userName.slice(1);
+    }
     
     this.loadDashboardData();
   }
@@ -64,12 +77,41 @@ export class DashboardComponent implements OnInit {
       }).subscribe({
         next: (data) => {
           const activePolicies = data.policies.filter(p => p.status === 'Active');
-          const totalCoverage = activePolicies.reduce((sum, p) => sum + p.coverageAmount, 0);
+          const sumInsured = activePolicies.reduce((sum, p) => sum + p.coverageAmount, 0);
           
+          // Calculate Upcoming Renewals (next 30 days)
+          const now = new Date();
+          const thirtyDaysLater = new Date();
+          thirtyDaysLater.setDate(now.getDate() + 30);
+          
+          const renewals = activePolicies.filter(p => {
+             if (!p.endDate) return false;
+             const expiry = new Date(p.endDate);
+             return expiry > now && expiry <= thirtyDaysLater;
+          }).length;
+
+          this.activeCoverage.set(sumInsured);
+          this.upcomingRenewals.set(renewals);
+          
+          const inProgressClaims = data.claims.filter(c => ['Submitted', 'UnderReview'].includes(c.status)).length;
+          const inProgressApps = data.apps.filter(a => ['Submitted', 'AssignedToAgent'].includes(a.status)).length;
+          this.pendingItemsCount.set(inProgressClaims + inProgressApps);
+
+          // Find Agent Name from applications
+          const agent = data.apps.find(a => a.assignedAgentName)?.assignedAgentName || null;
+          this.assignedAgentName.set(agent);
+
+          // Property Category Breakdown
+          const categories = activePolicies.reduce((acc: any, p) => {
+            acc[p.productName] = (acc[p.productName] || 0) + 1;
+            return acc;
+          }, {});
+          this.propertyBreakdown.set(Object.keys(categories).map(k => ({ type: k, count: categories[k] })));
+
           this.stats = [
             { label: 'Total Policies', value: data.policies.length.toString(), trend: `${activePolicies.length} Active` },
-            { label: 'Active Claims', value: data.claims.filter(c => c.status !== 'Settled' && c.status !== 'Rejected').length.toString(), detail: 'In Progress' },
-            { label: 'Protection Value', value: `$${(totalCoverage / 1000000).toFixed(1)}M`, detail: 'Total Coverage' }
+            { label: 'Pending Requests', value: (inProgressClaims + inProgressApps).toString(), detail: 'Claims & Apps' },
+            { label: 'Sum Insured', value: `₹${(sumInsured / 100000).toFixed(1)}L`, detail: 'Protection Value' }
           ];
 
           const activities: ActivityItem[] = [

@@ -17,4 +17,9 @@ public class PropertyRepository : IPropertyRepository
     {
         await _context.Properties.AddAsync(property);
     }
+
+    public async Task<Property?> GetByIdAsync(Guid id)
+    {
+        return await _context.Properties.FindAsync(id);
+    }
 }

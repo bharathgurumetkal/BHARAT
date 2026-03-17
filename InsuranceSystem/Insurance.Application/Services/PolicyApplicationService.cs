@@ -2,6 +2,7 @@ using Insurance.Application.DTOs.PolicyApplication;
 using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
 using Insurance.Domain.Enums;
+using Insurance.Application.DTOs.AuditLog;
 
 
 namespace Insurance.Application.Services
@@ -14,6 +15,7 @@ namespace Insurance.Application.Services
         private readonly IPropertyRepository _propertyRepository;
         private readonly ICustomerRepository _customerRepository;
         private readonly INotificationService _notificationService;
+        private readonly IAuditLogService _auditLogService;
 
         public PolicyApplicationService(
             IPolicyApplicationRepository applicationRepository,
@@ -21,7 +23,8 @@ namespace Insurance.Application.Services
             IPolicyRepository policyRepository,
             IPropertyRepository propertyRepository,
             ICustomerRepository customerRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IAuditLogService auditLogService)
         {
             _applicationRepository = applicationRepository;
             _productRepository = productRepository;
@@ -29,6 +32,7 @@ namespace Insurance.Application.Services
             _propertyRepository = propertyRepository;
             _customerRepository = customerRepository;
             _notificationService = notificationService;
+            _auditLogService = auditLogService;
         }
 
         public async Task<Guid> ApplyForProductAsync(Guid customerUserId, ApplyForProductDto dto)
@@ -74,6 +78,14 @@ namespace Insurance.Application.Services
                 "Info"
             );
 
+            await _auditLogService.LogAsync(new AuditLogEntry
+            {
+                Action = AuditAction.ApplicationSubmitted.ToString(),
+                EntityType = "PolicyApplication",
+                EntityId = application.Id.ToString(),
+                Description = $"Application submitted for product {product.Name}."
+            });
+
             return application.Id;
         }
 
@@ -106,6 +118,14 @@ namespace Insurance.Application.Services
                 $"A new policy application for {application.Product?.Name ?? "Insurance"} has been assigned to you.",
                 "Info"
             );
+
+            await _auditLogService.LogAsync(new AuditLogEntry
+            {
+                Action = AuditAction.ApplicationAssigned.ToString(),
+                EntityType = "PolicyApplication",
+                EntityId = application.Id.ToString(),
+                Description = $"Application assigned to agent {agentUserId}."
+            });
         }
 
         public async Task ApproveApplicationAsync(Guid applicationId, Guid agentUserId)
@@ -179,6 +199,14 @@ namespace Insurance.Application.Services
                 $"Congratulations! Your application for {application.Product?.Name ?? "Insurance"} has been approved. Please pay the premium to activate your policy.",
                 "Success"
             );
+
+            await _auditLogService.LogAsync(new AuditLogEntry
+            {
+                Action = AuditAction.ApplicationApproved.ToString(),
+                EntityType = "PolicyApplication",
+                EntityId = application.Id.ToString(),
+                Description = "Application approved and draft policy created."
+            });
         }
 
         public async Task RejectApplicationAsync(Guid applicationId, Guid agentUserId)
@@ -216,6 +244,14 @@ namespace Insurance.Application.Services
                 $"We regret to inform you that your application for {application.Product?.Name ?? "Insurance"} has been rejected.",
                 "Risk"
             );
+
+            await _auditLogService.LogAsync(new AuditLogEntry
+            {
+                Action = AuditAction.ApplicationRejected.ToString(),
+                EntityType = "PolicyApplication",
+                EntityId = application.Id.ToString(),
+                Description = "Application rejected by agent."
+            });
         }
 
         public async Task<List<PolicyApplicationDto>> GetAssignedApplicationsAsync(Guid agentUserId)

@@ -25,6 +25,11 @@ export class LoginComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+
+    // Clear error message when user starts typing/correcting
+    this.loginForm.valueChanges.subscribe(() => {
+      if (this.errorMessage) this.errorMessage = null;
+    });
   }
 
   isFieldInvalid(fieldName: string): boolean {

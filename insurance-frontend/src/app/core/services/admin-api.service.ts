@@ -89,4 +89,12 @@ export class AdminApiService {
   assignOfficerToClaim(claimId: string, officerUserId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/assign-officer-to-claim/${claimId}`, { officerUserId });
   }
+
+  getAuditLogs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/audit-logs`);
+  }
+
+  getDashboardSummary(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard-summary`);
+  }
 }

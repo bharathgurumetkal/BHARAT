@@ -168,6 +168,18 @@ export class ClaimsListComponent implements OnInit {
   };
 
   process(id: string, action: 'start' | 'approve' | 'reject' | 'settle'): void {
+    // Require a rejection reason before proceeding
+    let remarks: string | undefined;
+    if (action === 'reject') {
+      const input = window.prompt('⚠️ Rejection Reason (required)\nPlease provide a clear reason for rejecting this claim:');
+      if (!input || !input.trim()) {
+        this.errorMessage.set('Rejection cancelled — a reason is required.');
+        setTimeout(() => this.errorMessage.set(null), 3000);
+        return;
+      }
+      remarks = input.trim();
+    }
+
     this.processingMap.update(prev => ({ ...prev, [id]: true }));
     this.successMessage.set(null);
     this.errorMessage.set(null);
@@ -186,10 +198,10 @@ export class ClaimsListComponent implements OnInit {
 
     let obs$;
     switch (action) {
-      case 'start':   obs$ = this.claimsService.startReview(id);        break;
-      case 'approve': obs$ = this.claimsService.reviewClaim(id, true);  break;
-      case 'reject':  obs$ = this.claimsService.reviewClaim(id, false); break;
-      case 'settle':  obs$ = this.claimsService.settleClaim(id);        break;
+      case 'start':   obs$ = this.claimsService.startReview(id);                    break;
+      case 'approve': obs$ = this.claimsService.reviewClaim(id, true);              break;
+      case 'reject':  obs$ = this.claimsService.reviewClaim(id, false, remarks);    break;
+      case 'settle':  obs$ = this.claimsService.settleClaim(id);                    break;
     }
 
     obs$?.subscribe({

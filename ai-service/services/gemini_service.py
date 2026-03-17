@@ -74,3 +74,54 @@ Data:
             print(f"OpenRouter Error (Falling back to local): {str(e)}")
             # If OpenRouter fails (Quota, Auth, Network), use the local Heuristic fallback
             return self.heuristic.analyze_claim_locally(claim_data)
+    def analyze_prospect(self, prospect_data):
+        if not self.api_key:
+            return self.heuristic.analyze_prospect_locally(prospect_data)
+
+        prompt = f"""
+Analyze the following insurance customer data to predict their likelihood to renew their policies and their overall "sentiment" toward the company.
+Return ONLY a valid JSON object in this exact format:
+{{
+  "renewalScore": number (0-100),
+  "likelihood": "Low" | "Medium" | "High" | "Very High",
+  "churnProbability": number (0-1),
+  "explanation": "Brief analytical explanation of why they might or might not renew",
+  "recommendedAction": "Specific advice for the agent to retain this customer"
+}}
+
+Data:
+{json.dumps(prospect_data, indent=2)}
+"""
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2,
+            "response_format": { "type": "json_object" }
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "http://localhost:5033",
+            "X-Title": "Insurance Management System",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=15)
+            response.raise_for_status()
+            
+            resp_json = response.json()
+            ai_text = resp_json['choices'][0]['message']['content'].strip()
+            
+            start_idx = ai_text.find('{')
+            end_idx = ai_text.rfind('}') + 1
+            if start_idx != -1 and end_idx != -1:
+                json_str = ai_text[start_idx:end_idx]
+                return json.loads(json_str)
+            else:
+                return json.loads(ai_text)
+
+        except Exception as e:
+            print(f"OpenRouter Error (Falling back to local): {str(e)}")
+            return self.heuristic.analyze_prospect_locally(prospect_data)

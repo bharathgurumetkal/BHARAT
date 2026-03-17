@@ -57,7 +57,7 @@
               <div class="space-y-1 overflow-hidden">
                 <p class="text-[13px] font-bold text-gray-900 leading-tight truncate">{{ note.title }}</p>
                 <p class="text-xs text-gray-500 leading-normal line-clamp-2">{{ note.message }}</p>
-                <p class="text-[10px] text-gray-400 font-medium tracking-tight">{{ note.createdAt | date:'shortTime' }}</p>
+                <p class="text-[10px] text-gray-400 font-medium tracking-tight">{{ note.createdAt | date:'shortTime' : '+0530' }}</p>
               </div>
             </div>
             <button *ngIf="!note.isRead" (click)="markAsRead(note.id, $event)" 

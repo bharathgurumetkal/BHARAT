@@ -1,123 +1,161 @@
-<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-  <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-1">Hello, {{ userName }}</h1>
-      <p class="text-gray-500 font-medium">Welcome to your personalized insurance dashboard.</p>
-    </div>
-    
-    <div class="flex gap-4">
-      <div class="px-4 py-2 rounded-lg bg-white border border-gray-200 shadow-sm flex items-center gap-2">
-        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-        <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">{{ role }} View</span>
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+  
+  <!-- 👋 Focused Welcome Header -->
+  <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-black p-10 lg:p-14 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden border border-white/5">
+    <div class="relative z-10">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-[0.2em] mb-6 backdrop-blur-md text-indigo-300">
+        Portfolio Intelligence
       </div>
+      <h1 class="text-4xl lg:text-6xl font-black tracking-tight mb-4">Hello, {{ userName }}</h1>
+      <p class="text-slate-400 font-medium text-lg max-w-xl leading-relaxed">
+        Your property insurance portfolio is centralized and up-to-date. Review your coverage, tracking, and claims below.
+      </p>
     </div>
+
+    <!-- Abstract Background Elements -->
+    <div class="absolute -right-20 -top-20 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute right-40 -bottom-20 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px]"></div>
   </div>
 
-  <!-- Error State -->
   @if (errorMessage) {
-    <div class="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-center font-medium">
+    <div class="p-6 bg-red-50 border border-red-100 text-red-600 rounded-3xl text-center font-bold animate-in bounce-in duration-500">
+      <span class="material-icons align-middle mr-2">error_outline</span>
       {{ errorMessage }}
     </div>
   }
 
-  <!-- Loading State -->
-  @if (isLoading) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      @for (i of [1,2,3]; track i) {
-        <div class="h-32 bg-gray-100 animate-pulse rounded-xl"></div>
-      }
-    </div>
-  }
-
-  <!-- Stats Grid -->
+  <!-- 📊 Essential Metrics Grid -->
   @if (!isLoading) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for (stat of stats; track stat.label) {
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-3">{{ stat.label }}</div>
-          <div class="flex items-end justify-between">
-            <div class="text-2xl font-bold text-gray-900">{{ stat.value }}</div>
-            @if (stat.trend) { <div class="text-emerald-600 text-xs font-bold">{{ stat.trend }}</div> }
-            @if (stat.detail) { <div class="text-gray-400 text-xs font-medium">{{ stat.detail }}</div> }
+      
+      <!-- Card 1: Active Coverage -->
+      <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6">
+            <span class="material-icons">shield</span>
           </div>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Content Section -->
-  @if (!isLoading) {
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Activity Feed -->
-      <div [class]="role === 'Customer' ? 'lg:col-span-3 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm' : 'lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm'">
-        <div class="flex items-center justify-between mb-8">
-          <h3 class="text-xl font-bold text-gray-900">Recent Activity</h3>
-          @if (recentActivity.length > 0) {
-            <button class="text-sm font-bold text-blue-600 hover:underline">View All</button>
-          }
-        </div>
-        
-        <div class="space-y-4">
-          @if (recentActivity.length === 0) {
-            <div class="text-center py-10">
-              <p class="text-gray-400 text-sm italic">No recent activity found.</p>
-            </div>
-          }
-
-          @for (activity of recentActivity; track $index) {
-            <div class="flex items-center justify-between p-5 rounded-xl border border-gray-50 bg-gray-50/50 hover:bg-gray-50 transition-colors">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600">
-                  @if (activity.type === 'claim') {
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  } @else if (activity.type === 'app' || activity.type === 'user') {
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  } @else {
-                    <span class="material-icons">policy</span>
-                  }
-                </div>
-                <div>
-                  <div class="text-sm font-bold text-gray-900">{{ activity.title }}</div>
-                  <div class="text-xs text-gray-500 font-medium">{{ activity.subtitle }}</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-bold text-gray-400 uppercase tracking-tight">{{ activity.date | date:'short' }}</div>
-              </div>
-            </div>
-          }
+          <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Coverage Value</div>
+          <div class="text-3xl font-black text-gray-900 group-hover:text-indigo-600 transition-colors">₹{{ activeCoverage() | number }}</div>
+          <p class="text-[11px] text-gray-400 font-bold uppercase tracking-tight mt-3">Sum Insured across Active Assets</p>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      @if (role !== 'Customer') {
-        <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
-          <h3 class="text-xl font-bold text-gray-900 mb-8">Quick Actions</h3>
-          <div class="space-y-3">
-            @if (role === 'Admin') {
-              <button class="w-full text-left p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-blue-200 transition-all font-semibold text-gray-700 text-sm flex items-center justify-between group">
-                Add New Agent
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
+      <!-- Card 2: Upcoming Renewals -->
+      <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative"
+           [class.bg-orange-50/30]="upcomingRenewals() > 0"
+           [class.border-orange-100]="upcomingRenewals() > 0">
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-6"
+               [class.bg-orange-600]="upcomingRenewals() > 0" [class.text-white]="upcomingRenewals() > 0">
+            <span class="material-icons">timer</span>
+          </div>
+          <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Upcoming Renewals</div>
+          <div class="text-3xl font-black" [class.text-orange-600]="upcomingRenewals() > 0" [class.text-gray-900]="upcomingRenewals() === 0">
+            {{ upcomingRenewals() }} <span class="text-sm font-bold opacity-40">Due soon</span>
+          </div>
+          <p class="text-[11px] text-gray-400 font-bold uppercase tracking-tight mt-3">Action required within 30 days</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Pending Requests -->
+      <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
+            <span class="material-icons">query_stats</span>
+          </div>
+          <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Workflow Tracking</div>
+          <div class="text-3xl font-black text-gray-900 group-hover:text-emerald-600 transition-colors">
+            {{ pendingItemsCount() }} <span class="text-sm font-bold opacity-40">Processing</span>
+          </div>
+          <p class="text-[11px] text-gray-400 font-bold uppercase tracking-tight mt-3">In-progress Claims & Apps</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Main Grid ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- 📜 Left Column: Activity (2/3) -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Activity Feed -->
+        <div class="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden h-full">
+          <div class="flex items-center justify-between mb-10">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+              Account Activity
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-tighter">Real-time</span>
+            </h3>
+            <button class="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:underline">Full History &rarr;</button>
+          </div>
+          
+          <div class="space-y-4">
+            @if (recentActivity.length === 0) {
+              <div class="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                <span class="material-icons text-slate-300 text-5xl mb-4">data_exploration</span>
+                <p class="text-slate-400 text-sm font-semibold italic">No recent interactions logged.</p>
+              </div>
+            }
+
+            @for (activity of recentActivity; track $index) {
+              <div class="flex items-center justify-between p-7 rounded-[2rem] border border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-xl hover:border-indigo-50 transition-all group">
+                <div class="flex items-center gap-6">
+                  <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-sm"
+                       [class.bg-blue-100]="activity.type === 'policy'"
+                       [class.text-blue-600]="activity.type === 'policy'"
+                       [class.bg-orange-100]="activity.type === 'claim'"
+                       [class.text-orange-600]="activity.type === 'claim'"
+                       [class.bg-emerald-100]="activity.type === 'app'"
+                       [class.text-emerald-600]="activity.type === 'app'">
+                    <span class="material-icons">
+                      {{ activity.type === 'claim' ? 'account_balance_wallet' : activity.type === 'app' ? 'playlist_add_check' : 'local_police' }}
+                    </span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{{ activity.title }}</div>
+                    <div class="text-[11px] text-gray-500 font-bold uppercase tracking-wider mt-1 opacity-70">{{ activity.subtitle }}</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[11px] font-black text-gray-400 uppercase tracking-tighter">{{ activity.date | date:'dd MMM yyyy' : '+0530' }}</div>
+                  <div class="text-[9px] font-bold text-gray-300 uppercase mt-1">{{ activity.date | date:'shortTime' : '+0530' }}</div>
+                </div>
+              </div>
             }
           </div>
+        </div>
+      </div>
 
-          <div class="mt-auto pt-8">
-            <div class="p-6 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-100">
-                <div class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">Support Hero</div>
-                <p class="text-xs font-medium leading-relaxed">Need medical or technical assistance?</p>
-                <button class="mt-4 w-full bg-white text-blue-600 py-2 rounded-lg text-xs font-bold">Contact Support</button>
-            </div>
+      <!-- 💼 Right Column: Breakdown (1/3) -->
+      <div class="space-y-8">
+        <!-- Asset Distribution -->
+        <div class="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden group h-full">
+          <div class="text-xs font-black text-gray-400 uppercase tracking-[0.1em] mb-10 flex items-center justify-between">
+            Portfolio Distribution
+            <span class="material-icons text-gray-300 group-hover:text-indigo-600 transition-colors">pie_chart</span>
+          </div>
+          
+          <div class="space-y-8">
+            @for (item of propertyBreakdown(); track item.type) {
+              <div class="space-y-4">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-gray-800">{{ item.type }}</span>
+                  <span class="font-black text-indigo-600">{{ item.count }} <span class="text-[10px] text-gray-400">Policy</span></span>
+                </div>
+                <div class="h-3 bg-slate-50 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(79,70,229,0.3)]" [style.width.%]="(item.count / 3) * 100"></div>
+                </div>
+              </div>
+            }
+            @if (propertyBreakdown().length === 0) {
+              <div class="text-center py-20">
+                 <p class="text-gray-400 text-xs font-bold uppercase tracking-widest opacity-60 italic">No asset categories detected</p>
+              </div>
+            }
           </div>
         </div>
-      }
+      </div>
+
     </div>
   }
+
 </div>

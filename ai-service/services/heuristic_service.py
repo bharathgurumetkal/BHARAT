@@ -55,3 +55,61 @@ class HeuristicService:
             "recommendation": recommendation,
             "isFallback": True
         }
+    def analyze_prospect_locally(self, data):
+        """
+        Provides a data-driven renewal prediction using business rules
+        when the LLM service is unavailable.
+        """
+        score = 60 # Base renewal likelihood
+        
+        policy_count = int(data.get("policyCount", 0))
+        total_premium = float(data.get("totalPremiumPaid", 0))
+        claim_count = int(data.get("claimCount", 0))
+        customer_tenure_days = int(data.get("customerTenureDays", 0))
+        
+        # Rule 1: High claim count reduces loyalty
+        if claim_count > 2:
+            score -= 30
+        elif claim_count > 0:
+            score -= 10
+            
+        # Rule 2: Multi-policy customers are more likely to renew
+        if policy_count > 2:
+            score += 20
+        elif policy_count > 1:
+            score += 10
+            
+        # Rule 3: Long tenure increases loyalty
+        if customer_tenure_days > 365:
+            score += 15
+        elif customer_tenure_days > 180:
+            score += 5
+            
+        # Rule 4: High premium paid indicates high value but potentially higher churn risk if unsatisfied
+        if total_premium > 10000:
+            score += 5
+            
+        # Final Score Clamping
+        score = max(5, min(95, score))
+        
+        if score > 80:
+            likelihood = "Very High"
+            action = "Reward Loyalty: Offer a premium discount or exclusive product preview."
+        elif score > 60:
+            likelihood = "High"
+            action = "Maintain Relationship: Send a personalized check-in email."
+        elif score > 40:
+            likelihood = "Medium"
+            action = "Strategic Engagement: Discuss potential coverage gaps or bundle discounts."
+        else:
+            likelihood = "Low"
+            action = "Urgent Retention: Call immediately to address concerns or offer a significant loyalty incentive."
+
+        return {
+            "renewalScore": score,
+            "likelihood": likelihood,
+            "churnProbability": (100 - score) / 100.0,
+            "explanation": f"Heuristic analysis based on history: {policy_count} policies, {claim_count} claims, and {customer_tenure_days} days of tenure.",
+            "recommendedAction": action,
+            "isFallback": True
+        }

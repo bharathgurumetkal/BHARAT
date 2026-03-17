@@ -137,4 +137,19 @@ public class CustomerController : ControllerBase
         var applications = await _policyApplicationService.GetApplicationsByCustomerAsync(customerUserId);
         return Ok(applications);
     }
+
+    [HttpPost("renew-policy/{policyId}")]
+    public async Task<IActionResult> RenewPolicy(Guid policyId, [FromServices] IPolicyService policyService)
+    {
+        var customerUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await policyService.RenewPolicyAsync(policyId, customerUserId);
+        return Ok(result);
+    }
+
+    [HttpGet("download-policy/{policyId}")]
+    public async Task<IActionResult> DownloadPolicyDocument(Guid policyId, [FromQuery] string type, [FromServices] IPolicyDocumentService docService)
+    {
+        var content = await docService.GeneratePolicyScheduleAsync(policyId, type ?? "Schedule");
+        return File(content, "application/pdf", $"{type ?? "Policy"}_{policyId.ToString().Substring(0, 8)}.pdf");
+    }
 }

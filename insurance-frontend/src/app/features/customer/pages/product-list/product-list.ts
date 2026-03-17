@@ -22,6 +22,7 @@ export class ProductListComponent implements OnInit {
   isSubmitting = signal(false);
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
+  estimatedPremium = signal<number>(0);
 
   constructor(
     private customerService: CustomerApiService,
@@ -103,6 +104,17 @@ export class ProductListComponent implements OnInit {
     this.selectedProduct.set(product);
     this.successMessage.set(null);
     this.errorMessage.set(null);
+    this.estimatedPremium.set(0);
+  }
+
+  onMarketValueChange(): void {
+    const product = this.selectedProduct();
+    const marketValue = this.applicationForm.get('marketValue')?.value || 0;
+    if (product && marketValue > 0) {
+      this.estimatedPremium.set(marketValue * (product.baseRatePercentage / 100));
+    } else {
+      this.estimatedPremium.set(0);
+    }
   }
 
   onSubmit(): void {

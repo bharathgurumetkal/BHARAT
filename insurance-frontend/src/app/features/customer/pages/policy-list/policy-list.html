@@ -15,7 +15,7 @@
     @if (isLoading()) {
         <div class="space-y-4">
             @for (i of [1,2,3]; track i) {
-                <div class="h-32 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
+                <div class="h-52 bg-gray-100 animate-pulse rounded-2xl border border-gray-200"></div>
             }
         </div>
     }
@@ -36,15 +36,36 @@
     @if (!isLoading() && policies().length > 0) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             @for (policy of policies(); track policy.id) {
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
+                <div class="bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group policy-item-card"
+                     [ngClass]="{
+                       'border-emerald-100': policy.status === 'Active',
+                       'border-blue-100': policy.status === 'Draft',
+                       'border-gray-100': policy.status === 'Expired' || policy.status === 'Cancelled'
+                     }">
+
+                    <!-- Colored Top Bar based on status -->
+                    <div class="h-1.5 w-full"
+                         [ngClass]="{
+                           'bg-gradient-to-r from-emerald-400 to-emerald-500': policy.status === 'Active',
+                           'bg-gradient-to-r from-blue-400 to-blue-500': policy.status === 'Draft',
+                           'bg-gray-200': policy.status === 'Expired' || policy.status === 'Cancelled'
+                         }">
+                    </div>
+
                     <div class="p-6">
-                        <div class="flex items-start justify-between mb-6">
+                        <!-- Header -->
+                        <div class="flex items-start justify-between mb-5">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center border"
+                                     [ngClass]="{
+                                       'bg-emerald-50 border-emerald-100 text-emerald-600': policy.status === 'Active',
+                                       'bg-blue-50 border-blue-100 text-blue-600': policy.status === 'Draft',
+                                       'bg-gray-50 border-gray-100 text-gray-400': policy.status === 'Expired' || policy.status === 'Cancelled'
+                                     }">
                                     <span class="material-icons">shield</span>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ policy.policyNumber }}</h3>
+                                    <h3 class="text-lg font-bold text-gray-900 leading-tight">POL-{{ policy.policyNumber }}</h3>
                                     <p class="text-xs font-bold text-blue-600 uppercase tracking-widest">{{ policy.productName }}</p>
                                 </div>
                             </div>
@@ -53,35 +74,69 @@
                             </span>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-6 mb-8">
+                        <!-- Coverage Grid -->
+                        <div class="grid grid-cols-2 gap-4 mb-5">
                             <div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Coverage Amount</p>
-                                <p class="text-base font-bold text-gray-900">{{ policy.coverageAmount | currency:'INR' }}</p>
+                                <p class="text-base font-bold text-gray-900">₹ {{ policy.coverageAmount | number }}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Annual Premium</p>
-                                <p class="text-base font-bold text-emerald-600">{{ policy.premium | currency:'INR' }}</p>
+                                <p class="text-base font-bold text-emerald-600">₹ {{ policy.premium | number }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Duration</p>
-                                <p class="text-xs font-semibold text-gray-600">
-                                    {{ (policy.startDate | date:'dd MMM yyyy') || 'TBD' }} - {{ (policy.endDate | date:'dd MMM yyyy') || 'TBD' }}
-                                </p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Valid From</p>
+                                <p class="text-xs font-semibold text-gray-600">{{ (policy.startDate | date:'dd MMM yyyy' : '+0530') || 'TBD' }}</p>
                             </div>
-                            <div *ngIf="policy.endDate">
-                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Expiry Status</p>
-                                @if (isExpired(policy.endDate)) {
-                                    <span class="text-xs font-bold text-red-500 flex items-center gap-1">
-                                        <span class="material-icons text-sm">error</span> Expired
-                                    </span>
-                                } @else {
-                                    <span class="text-xs font-bold text-gray-600">
-                                        {{ getRemainingDays(policy.endDate) }} Days Left
-                                    </span>
-                                }
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Expires On</p>
+                                <p class="text-xs font-semibold"
+                                   [ngClass]="getRemainingDays(policy.endDate) < 30 && policy.status === 'Active' ? 'text-orange-600 font-bold' : 'text-gray-600'">
+                                    {{ (policy.endDate | date:'dd MMM yyyy' : '+0530') || 'TBD' }}
+                                </p>
                             </div>
                         </div>
 
+                        <!-- Expiry Countdown Bar (only for Active policies) -->
+                        @if (policy.status === 'Active' && policy.endDate) {
+                            @let days = getRemainingDays(policy.endDate);
+                            @let pct = getExpiryPercent(policy);
+                            <div class="mb-5">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Coverage Duration</span>
+                                    <span class="text-[10px] font-black"
+                                          [ngClass]="days < 7 ? 'text-red-500' : days < 30 ? 'text-orange-500' : 'text-emerald-600'">
+                                        {{ days > 0 ? days + ' days remaining' : 'Expired' }}
+                                    </span>
+                                </div>
+                                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-700"
+                                         [style.width.%]="pct"
+                                         [ngClass]="days < 7 ? 'bg-red-400' : days < 30 ? 'bg-orange-400' : 'bg-emerald-400'">
+                                    </div>
+                                </div>
+                                @if (days > 0 && days <= 7) {
+                                    <p class="text-[10px] text-red-500 font-bold mt-1">⚠ Expires very soon! Renew immediately to avoid gap in coverage.</p>
+                                } @else if (days > 0 && days <= 30) {
+                                    <p class="text-[10px] text-orange-500 font-bold mt-1">🔔 Renewal window opening. Consider renewing soon.</p>
+                                }
+                            </div>
+                        }
+
+                        <!-- Document Center -->
+                        @if (policy.status === 'Active') {
+                            <div class="mb-5 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Document Center</div>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <button (click)="downloadPolicyDocument(policy.id, 'Schedule')" class="flex items-center gap-2 p-2 bg-white hover:bg-blue-50 border border-gray-200 rounded-xl text-[10px] font-bold text-gray-700 transition-all group">
+                                        <span class="material-icons text-blue-500 group-hover:scale-110 transition-transform">description</span>
+                                        <span>Policy Document (PDF)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Action Buttons -->
                         <div class="flex gap-3">
                             @if (policy.status === 'Draft') {
                                 <button (click)="payPremium(policy.id)" [disabled]="isPaying()" class="w-full btn-primary py-3 rounded-xl flex items-center justify-center gap-2">
@@ -90,12 +145,15 @@
                                 </button>
                             }
                             @if (policy.status === 'Active' && !isExpired(policy.endDate)) {
-                                <a [routerLink]="['/customer/claims']" class="flex-1 btn-primary py-3 rounded-xl text-center flex items-center justify-center gap-2 text-sm">
+                                <a [routerLink]="['/customer/claims']" class="flex-1 btn-primary py-3 rounded-xl text-center flex items-center justify-center gap-2 text-sm font-bold">
                                     <span class="material-icons text-sm">add_circle</span> File Claim
                                 </a>
-                                <a [routerLink]="['/customer/claims']" class="flex-1 btn-outline py-3 rounded-xl text-center flex items-center justify-center gap-2 text-sm font-bold">
-                                    <span class="material-icons text-sm">history</span> History
-                                </a>
+                            }
+                            @if (isEligibleForRenewal(policy)) {
+                                <button (click)="openRenewalModal(policy.id)" [disabled]="isRenewing() === policy.id" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-colors">
+                                    @if (isRenewing() === policy.id) { <span class="material-icons animate-spin text-sm">sync</span> }
+                                    {{ isRenewing() === policy.id ? 'Renewing...' : 'Renew Policy' }}
+                                </button>
                             }
                         </div>
                     </div>
@@ -104,7 +162,34 @@
         </div>
     }
 
-    <!-- Success Modal -->
+    <!-- ─── Renewal Confirmation Modal ─── -->
+    @if (showRenewalModal()) {
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/30 backdrop-blur-sm animate-in fade-in">
+            <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div class="p-10 flex flex-col items-center text-center">
+                    <div class="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-6">
+                        <span class="material-icons !text-4xl">autorenew</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2">Renew Policy?</h3>
+                    <p class="text-gray-500 text-sm mb-8 leading-relaxed">
+                        This will extend your policy coverage for another year. Your next annual premium of
+                        <strong class="text-gray-800">₹ {{ getPolicyById(renewingPolicyId())?.premium | number }}</strong>
+                        will be applied.
+                    </p>
+                    <div class="flex gap-4 w-full">
+                        <button (click)="closeRenewalModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition-all">
+                            Cancel
+                        </button>
+                        <button (click)="confirmRenewal()" [disabled]="isRenewing() !== null" class="flex-1 py-3 bg-amber-500 text-white text-sm font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg shadow-amber-100 disabled:opacity-50">
+                            {{ isRenewing() ? 'Renewing...' : 'Yes, Renew' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ─── Payment Success Modal ─── -->
     @if (showSuccessModal()) {
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/20 backdrop-blur-sm animate-in fade-in transition-all">
             <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-300">
@@ -112,12 +197,13 @@
                     <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-8">
                         <span class="material-icons !text-6xl animate-in scale-in-50 duration-700">verified</span>
                     </div>
-                    
-                    <h3 class="text-2xl font-black text-gray-900 mb-2">Payment Confirmed</h3>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2">
+                        {{ isRenewalSuccess() ? 'Policy Renewed!' : 'Payment Confirmed' }}
+                    </h3>
                     <p class="text-gray-500 mb-10 leading-relaxed">
-                        {{ successMessage() }} Your property is now fully protected.
+                        {{ successMessage() }}
+                        {{ isRenewalSuccess() ? 'Your coverage has been extended for another year.' : 'Your property is now fully protected.' }}
                     </p>
-
                     <button (click)="closeModal()" class="btn-primary w-full py-4 rounded-2xl">
                         Accept & Close
                     </button>

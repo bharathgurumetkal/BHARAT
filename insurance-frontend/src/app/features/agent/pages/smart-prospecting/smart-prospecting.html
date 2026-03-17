@@ -1,0 +1,87 @@
+<div class="prospecting-container">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Smart Prospecting <span class="ai-badge">AI Powered</span></h1>
+      <p>AI-driven analysis of assigned customers to predict renewal likelihood. Use refresh for real-time data.</p>
+    </div>
+    <div class="header-actions">
+      <div class="debug-info" *ngIf="prospects.length > 0">
+        <span class="badge-source">{{ prospects[0]?.source }}</span>
+      </div>
+      <button (click)="refreshData()" [disabled]="loading" class="refresh-btn">
+        <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Analyzing...' : 'Refresh Insights' }}
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="errorMessage" class="error-alert">
+    {{ errorMessage }}
+  </div>
+
+  <div class="prospects-grid">
+    <div *ngFor="let p of prospects" class="prospect-card">
+      <div class="card-side-indicator" [style.background-color]="getScoreColor(p.aiAnalysis?.renewalScore || 0)"></div>
+      
+      <div class="card-content">
+        <div class="customer-info">
+          <h3>{{ p.customerName }}</h3>
+          <div class="metadata">
+            <span class="email">{{ p.email }}</span>
+            <span class="analyzed-at" *ngIf="p.lastAnalyzedAt">Analyzed: {{ p.lastAnalyzedAt | date:'shortTime' : '+0530' }}</span>
+          </div>
+          
+          <div class="stats-row">
+            <div class="stat">
+              <span class="label">Policies</span>
+              <span class="value">{{ p.policyCount }}</span>
+            </div>
+            <div class="stat border-left">
+              <span class="label">Tenure</span>
+              <span class="value">{{ p.customerTenureDays }} days</span>
+            </div>
+            <div class="stat border-left">
+              <span class="label">Claims</span>
+              <span class="value" [class.danger]="p.claimCount > 1">{{ p.claimCount }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-insight-panel">
+          <div class="gauge-container">
+            <div class="gauge-background">
+              <div class="gauge-fill" 
+                   [style.height.%]="p.aiAnalysis?.renewalScore"
+                   [style.background-color]="getScoreColor(p.aiAnalysis?.renewalScore || 0)">
+              </div>
+            </div>
+            <div class="gauge-label">
+              <span class="score">{{ p.aiAnalysis?.renewalScore }}%</span>
+              <span class="text">Likelihood</span>
+            </div>
+          </div>
+
+          <div class="analysis-details">
+            <div class="status-badge" [ngClass]="getLikelihoodClass(p.aiAnalysis?.likelihood || 'Unknown')">
+              {{ p.aiAnalysis?.likelihood }} Likelihood
+            </div>
+            <p class="explanation">{{ p.aiAnalysis?.explanation }}</p>
+            <div class="recommendation">
+              <strong>Agent Strategy:</strong>
+              <p>{{ p.aiAnalysis?.recommendedAction }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && prospects.length === 0" class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No Assigned Customers</h3>
+    <p>You don't have any assigned customers to analyze at the moment.</p>
+  </div>
+</div>

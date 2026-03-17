@@ -161,7 +161,7 @@ type FilterType = 'All' | 'Unread' | 'Info' | 'Success' | 'Warning' | 'Risk';
                     </span>
                   </div>
                   <span class="text-[11px] text-slate-400 font-semibold whitespace-nowrap bg-slate-50 px-2.5 py-1 rounded-lg shrink-0">
-                    {{ note.createdAt | date:'MMM d · h:mm a' }}
+                    {{ note.createdAt | date:'MMM d · h:mm a' : '+0530' }}
                   </span>
                 </div>
 

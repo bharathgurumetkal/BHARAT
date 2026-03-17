@@ -15,6 +15,7 @@ public class AiClaimClient : IAiClaimClient
     public AiClaimClient(IHttpClientFactory httpClientFactory, ILogger<AiClaimClient> logger)
     {
         _httpClient = httpClientFactory.CreateClient("AiService");
+        _httpClient.Timeout = TimeSpan.FromSeconds(5); // Prevent 100s hangs if AI service is down
         _logger = logger;
     }
 
@@ -23,9 +24,9 @@ public class AiClaimClient : IAiClaimClient
         try
         {
             _logger.LogInformation("Sending claim for AI analysis: {@Request}", request);
-            
+
             var response = await _httpClient.PostAsJsonAsync("analyze-claim", request);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -46,6 +47,32 @@ public class AiClaimClient : IAiClaimClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unexpected error occurred during AI analysis.");
+            return null;
+        }
+    }
+    public async Task<AiProspectOutputDto?> PredictProspectAsync(AiProspectInputDto request)
+    {
+        try
+        {
+            _logger.LogInformation("Sending prospect data for AI analysis: {@Request}", request);
+            
+            var response = await _httpClient.PostAsJsonAsync("analyze-prospect", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var result = await response.Content.ReadFromJsonAsync<AiProspectOutputDto>(options);
+                _logger.LogInformation("AI prospect analysis completed successfully: {@Result}", result);
+                return result;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("AI Service returned an error. Status: {StatusCode}, Content: {Content}", response.StatusCode, errorContent);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to connect to AI Service for Prospecting.");
             return null;
         }
     }
