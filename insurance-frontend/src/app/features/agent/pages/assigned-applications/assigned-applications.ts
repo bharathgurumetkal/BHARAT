@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { AgentService } from '../../../../core/services/agent.service';
 import { PolicyApplication } from '../../../../core/models/insurance.models';
 
+declare const google: any;
+
 @Component({
   selector: 'app-assigned-applications',
   standalone: true,
@@ -23,6 +25,9 @@ export class AssignedApplicationsComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   
   selectedApp = signal<PolicyApplication | null>(null);
+  
+  private mapInstance: any = null;
+  private mapMarker: any = null;
 
   constructor(
     private agentService: AgentService
@@ -48,10 +53,37 @@ export class AssignedApplicationsComponent implements OnInit {
 
   selectApplication(app: PolicyApplication): void {
     this.selectedApp.set(app);
+
+    if (app.latitude && app.longitude) {
+      setTimeout(() => {
+        this.initAgentMap(app.latitude!, app.longitude!);
+      }, 150);
+    }
+  }
+
+  private initAgentMap(lat: number, lng: number): void {
+    const mapElement = document.getElementById('agent-property-map') as HTMLElement;
+    if (!mapElement || typeof google === 'undefined') return;
+
+    this.mapInstance = new google.maps.Map(mapElement, {
+      center: { lat, lng },
+      zoom: 17,
+      mapTypeControl: false,
+      streetViewControl: false,
+      styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }]
+    });
+
+    this.mapMarker = new google.maps.Marker({
+      map: this.mapInstance,
+      position: { lat, lng },
+      animation: google.maps.Animation.DROP
+    });
   }
 
   closeDrawer(): void {
     this.selectedApp.set(null);
+    this.mapInstance = null;
+    this.mapMarker = null;
   }
 
   process(id: string, action: 'approve' | 'reject'): void {

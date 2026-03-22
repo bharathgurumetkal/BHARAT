@@ -1,4 +1,4 @@
-﻿using Insurance.Application.DTOs.Policy;
+using Insurance.Application.DTOs.Policy;
 using Insurance.Application.DTOs.AuditLog;
 using Insurance.Application.Interfaces;
 using Insurance.Domain.Entities;
@@ -92,7 +92,11 @@ public class PolicyService : IPolicyService
             StartDate = p.StartDate,
             EndDate = p.EndDate,
             ApplicationId = p.ApplicationId,
-            ProductName = p.Application?.Product?.Name ?? "General Insurance"
+            ProductName = p.Application?.Product?.Name ?? "General Insurance",
+            PropertyAddress = p.Property?.Address ?? "N/A",
+            RiskZone = p.Property?.RiskZone ?? "N/A",
+            YearBuilt = p.Property?.YearBuilt ?? 0,
+            HasSecuritySystem = p.Property?.HasSecuritySystem ?? false
         }).ToList();
     }
 
@@ -111,7 +115,11 @@ public class PolicyService : IPolicyService
             StartDate = p.StartDate,
             EndDate = p.EndDate,
             ApplicationId = p.ApplicationId,
-            ProductName = p.Application?.Product?.Name ?? "General Insurance"
+            ProductName = p.Application?.Product?.Name ?? "General Insurance",
+            PropertyAddress = p.Application?.Address ?? p.Property?.Address ?? "N/A",
+            RiskZone = p.Property?.RiskZone ?? "N/A",
+            YearBuilt = p.Property?.YearBuilt ?? 0,
+            HasSecuritySystem = p.Property?.HasSecuritySystem ?? false
         }).ToList();
     }
 
@@ -176,7 +184,11 @@ public class PolicyService : IPolicyService
             StartDate = p.StartDate,
             EndDate = p.EndDate,
             ApplicationId = p.ApplicationId,
-            ProductName = p.Application?.Product?.Name ?? "General Insurance"
+            ProductName = p.Application?.Product?.Name ?? "General Insurance",
+            PropertyAddress = p.Application?.Address ?? p.Property?.Address ?? "N/A",
+            RiskZone = p.Property?.RiskZone ?? "N/A",
+            YearBuilt = p.Property?.YearBuilt ?? 0,
+            HasSecuritySystem = p.Property?.HasSecuritySystem ?? false
         };
     }
 }

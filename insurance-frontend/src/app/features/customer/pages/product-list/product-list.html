@@ -209,8 +209,13 @@
                   <label class="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Property Address</label>
                   <div style="position:relative;">
                     <span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:18px;">location_on</span>
-                    <input type="text" formControlName="address" class="input-field w-full"
-                      style="padding-left:38px;" placeholder="e.g. 45 Maple Street, Austin, TX">
+                    <input type="text" id="property-address-input" formControlName="address" class="input-field w-full"
+                      style="padding-left:38px;" placeholder="Search Google Maps...">
+                  </div>
+                  
+                  <!-- Industry-level Visual Map -->
+                  <div id="property-map" class="w-full h-48 xl:h-56 mt-3 rounded-xl border border-gray-200 shadow-inner overflow-hidden bg-gray-50 flex items-center justify-center">
+                    <span class="text-sm text-gray-400 font-medium tracking-wide">Loading Map...</span>
                   </div>
                 </div>
 
@@ -247,7 +252,7 @@
                   <div style="position:relative;">
                     <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-weight:700;font-size:14px;">₹</span>
                     <input type="number" formControlName="marketValue" class="input-field w-full"
-                      style="padding-left:28px;" (input)="onMarketValueChange()">
+                      style="padding-left:28px;">
                   </div>
                 </div>
 

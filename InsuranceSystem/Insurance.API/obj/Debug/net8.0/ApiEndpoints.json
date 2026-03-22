@@ -655,6 +655,21 @@
         "IsRequired": false
       },
       {
+        "Name": "IncidentDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "IncidentLocation",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "DamageType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
         "Name": "Documents",
         "Type": "System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false

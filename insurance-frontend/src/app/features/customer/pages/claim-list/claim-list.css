@@ -1,3 +1,5 @@
+@reference "../../../../../styles.css";
+
 /* Custom Scrollbar for Modal */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -33,4 +35,34 @@
 
 .bg-emerald-500 {
     box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* NEW UI SECTIONS                                 */
+/* ═══════════════════════════════════════════════ */
+
+.claim-section-card {
+    @apply p-6 rounded-[1.8rem] bg-white border border-gray-100 shadow-sm transition-all duration-300;
+}
+
+.claim-section-card:hover {
+    @apply border-blue-100 shadow-md;
+}
+
+.claim-section-header {
+    @apply flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4;
+}
+
+
+
+/* ═══════════════════════════════════════════════ */
+/* INPUT REFINEMENTS                               */
+/* ═══════════════════════════════════════════════ */
+
+.input-field {
+    @apply bg-gray-50 border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all;
+}
+
+select.input-field {
+    @apply cursor-pointer;
 }

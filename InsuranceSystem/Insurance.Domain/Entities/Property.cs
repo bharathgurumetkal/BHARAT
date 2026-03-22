@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,5 +18,7 @@ namespace Insurance.Domain.Entities
         public decimal MarketValue { get; set; }
         public string RiskZone { get; set; } = default!;
         public bool HasSecuritySystem { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
     }
 }

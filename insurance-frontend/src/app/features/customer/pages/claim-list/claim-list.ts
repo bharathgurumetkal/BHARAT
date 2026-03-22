@@ -8,6 +8,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../../environments/environment';
 
+
+const DAMAGE_TYPES = ['Fire', 'Water Leak', 'Flood', 'Theft', 'Natural Disaster', 'Other'] as const;
+
 @Component({
   selector: 'app-claim-list',
   standalone: true,
@@ -17,60 +20,50 @@ import { environment } from '../../../../../environments/environment';
 })
 export class ClaimListComponent implements OnInit {
   claims = signal<Claim[]>([]);
-  allPolicies = signal<Policy[]>([]); 
+  allPolicies = signal<Policy[]>([]);
   selectedPolicy = signal<Policy | null>(null);
   claimForm: FormGroup;
-  
+
+  readonly damageTypes = DAMAGE_TYPES;
+  readonly todayString = new Date().toISOString().split('T')[0]; // For max date constraint
+
   isLoading = signal(true);
   isSubmitting = signal(false);
   showForm = signal(false);
-  showConfirmDialog = signal(false); 
-  showDetailsModal = signal(false); 
-  selectedClaim = signal<Claim | null>(null); 
-  selectedFiles = signal<File[]>([]); 
+  showConfirmDialog = signal(false);
+  showDetailsModal = signal(false);
+  selectedClaim = signal<Claim | null>(null);
+  selectedFiles = signal<File[]>([]);
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
   uploadProgress = signal<string | null>(null);
 
   currentClaimAmount = signal(0);
 
-  /**
-   * Calculates the available coverage for the selected policy
-   * by subtracting all non-rejected existing claims.
-   */
   availableCoverage = computed(() => {
     const policy = this.selectedPolicy();
     if (!policy) return 0;
-    
     const utilized = this.claims()
       .filter(c => c.policyId === policy.id && c.status !== 'Rejected')
       .reduce((sum, c) => sum + (c.claimAmount || 0), 0);
-      
     return Math.max(0, policy.coverageAmount - utilized);
   });
 
   isHighClaim = computed(() => {
     const policy = this.selectedPolicy();
     if (!policy) return false;
-    const amount = this.currentClaimAmount();
-    // High claim is > 80% of the total policy coverage
-    return amount > (policy.coverageAmount * 0.8);
+    return this.currentClaimAmount() > (policy.coverageAmount * 0.8);
   });
 
   remainingCoverage = computed(() => {
-    const available = this.availableCoverage();
-    const current = this.currentClaimAmount();
-    // Allow negative value here so the UI can show it in red if exceeded
-    return available - current;
+    return this.availableCoverage() - this.currentClaimAmount();
   });
 
   totalClaimsFiled = computed(() => this.claims().length);
-  
-  activeClaimsCount = computed(() => 
+  activeClaimsCount = computed(() =>
     this.claims().filter(c => ['Submitted', 'UnderReview'].includes(c.status)).length
   );
-
-  totalSettledAmount = computed(() => 
+  totalSettledAmount = computed(() =>
     this.claims()
       .filter(c => ['Settled', 'Approved'].includes(c.status))
       .reduce((sum, c) => sum + (c.claimAmount || 0), 0)
@@ -84,21 +77,27 @@ export class ClaimListComponent implements OnInit {
     this.claimForm = this.fb.group({
       policyId: ['', Validators.required],
       claimAmount: [0, [Validators.required, Validators.min(1)]],
-      reason: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
+      reason: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
+      incidentDate: ['', Validators.required],
+      incidentLocation: ['', [Validators.required, Validators.minLength(5)]],
+      damageType: ['', Validators.required]
     });
 
-    // Watch for policy selection changes
     this.claimForm.get('policyId')?.valueChanges.subscribe(id => {
-      this.selectedPolicy.set(this.allPolicies().find(p => p.id === id) || null);
-      // Validator update is now handled by an effect reacting to selectedPolicy and claims
+      const policy = this.allPolicies().find(p => p.id === id) || null;
+      this.selectedPolicy.set(policy);
+      if (policy) {
+        // Auto-populate incident location strictly from property address
+        this.claimForm.get('incidentLocation')?.setValue(policy.propertyAddress || '');
+      } else {
+        this.claimForm.get('incidentLocation')?.setValue('');
+      }
     });
 
-    // Sync form value to signal for reactivity in computed properties
     this.claimForm.get('claimAmount')?.valueChanges.subscribe(val => {
       this.currentClaimAmount.set(val || 0);
     });
 
-    // effect to handle validator updates reactively
     effect(() => {
       this.updateValidators();
     });
@@ -113,12 +112,11 @@ export class ClaimListComponent implements OnInit {
     const policy = this.selectedPolicy();
     const available = this.availableCoverage();
     const amountControl = this.claimForm.get('claimAmount');
-
     if (amountControl) {
       if (policy) {
         amountControl.setValidators([
-          Validators.required, 
-          Validators.min(1), 
+          Validators.required,
+          Validators.min(1),
           Validators.max(available)
         ]);
       } else {
@@ -135,20 +133,15 @@ export class ClaimListComponent implements OnInit {
         this.claims.set(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         this.isLoading.set(false);
       },
-      error: () => {
-        this.isLoading.set(false);
-      }
+      error: () => { this.isLoading.set(false); }
     });
   }
 
   loadPolicies(): void {
     this.customerService.getPolicies().subscribe({
-      next: (data) => {
-        this.allPolicies.set(data);
-      }
+      next: (data) => { this.allPolicies.set(data); }
     });
   }
-
 
 
   initiateSubmit(): void {
@@ -159,17 +152,12 @@ export class ClaimListComponent implements OnInit {
   onFileSelected(event: any): void {
     const files: FileList = event.target.files;
     if (files.length === 0) return;
-
     const newFiles = Array.from(files);
-    
-    // Validate total count
     if (this.selectedFiles().length + newFiles.length > 5) {
-      this.errorMessage.set("Maximum 5 files allowed.");
+      this.errorMessage.set('Maximum 5 files allowed.');
       return;
     }
-
-    // Check sizes
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     const updatedFiles = [...this.selectedFiles()];
     for (const file of newFiles) {
       if (file.size > maxSize) {
@@ -178,9 +166,8 @@ export class ClaimListComponent implements OnInit {
       }
       updatedFiles.push(file);
     }
-    
     this.selectedFiles.set(updatedFiles);
-    this.errorMessage.set(null); // Clear if valid
+    this.errorMessage.set(null);
   }
 
   removeFile(index: number): void {
@@ -196,7 +183,7 @@ export class ClaimListComponent implements OnInit {
     this.isSubmitting.set(true);
     this.successMessage.set(null);
     this.errorMessage.set(null);
-    this.uploadProgress.set("Uploading documents...");
+    this.uploadProgress.set('Uploading documents...');
 
     try {
       const formData = new FormData();
@@ -204,26 +191,32 @@ export class ClaimListComponent implements OnInit {
       formData.append('claimAmount', this.claimForm.get('claimAmount')?.value);
       formData.append('reason', this.claimForm.get('reason')?.value);
 
-      // Append files
+      // New fields
+      const incidentDate = this.claimForm.get('incidentDate')?.value;
+      if (incidentDate) formData.append('incidentDate', incidentDate);
+
+      const incidentLocation = this.claimForm.get('incidentLocation')?.value;
+      if (incidentLocation) formData.append('incidentLocation', incidentLocation);
+
+      const damageType = this.claimForm.get('damageType')?.value;
+      if (damageType) formData.append('damageType', damageType);
+
       if (this.selectedFiles().length > 0) {
         for (const file of this.selectedFiles()) {
           formData.append('files', file);
         }
       }
 
-      // 3. Submit to backend using await for consistent error handling
-      const res = await firstValueFrom(this.customerService.submitClaim(formData));
-      
-      this.successMessage.set("Claim submitted successfully! Status: Under Review.");
+      await firstValueFrom(this.customerService.submitClaim(formData));
+      this.successMessage.set('Claim submitted successfully! Status: Under Review.');
       this.isSubmitting.set(false);
       this.uploadProgress.set(null);
-      this.selectedFiles.set([]); // Clear files
+      this.selectedFiles.set([]);
       this.loadClaims();
 
     } catch (err: any) {
       console.error('Claim submission error details:', err);
-      // Use the actual message from the interceptor if available
-      this.errorMessage.set(err.message || "Failed to submit claim. Ensure the amount is valid.");
+      this.errorMessage.set(err.message || 'Failed to submit claim. Ensure the amount is valid.');
       this.isSubmitting.set(false);
       this.uploadProgress.set(null);
     }
@@ -238,14 +231,16 @@ export class ClaimListComponent implements OnInit {
     this.selectedFiles.set([]);
     this.uploadProgress.set(null);
     this.claimForm.reset({
-        policyId: '',
-        claimAmount: 0,
-        reason: ''
+      policyId: '',
+      claimAmount: 0,
+      reason: '',
+      incidentDate: '',
+      incidentLocation: '',
+      damageType: ''
     });
   }
 
   viewDetails(claim: Claim): void {
-    console.log('Viewing claim details. Documents found:', claim.documents);
     this.selectedClaim.set(claim);
     this.showDetailsModal.set(true);
   }
@@ -267,6 +262,18 @@ export class ClaimListComponent implements OnInit {
       default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   }
+
+  getDamageTypeIcon(type: string): string {
+    switch (type) {
+      case 'Fire': return 'local_fire_department';
+      case 'Water Leak': return 'water_drop';
+      case 'Flood': return 'flood';
+      case 'Theft': return 'policy';
+      case 'Natural Disaster': return 'storm';
+      default: return 'report_problem';
+    }
+  }
+
 
   getDownloadUrl(filePath: string): string {
     const base = environment.apiUrl.replace('/api', '');
@@ -297,37 +304,25 @@ export class ClaimListComponent implements OnInit {
   getTimelineSteps(claim: Claim) {
     const steps = [
       { id: 1, label: 'Claim Submitted', icon: 'send', status: 'pending' },
-      { id: 2, label: 'AI Risk Analysis', icon: 'psychology', status: 'pending' },
-      { id: 3, label: 'Under Review', icon: 'rate_review', status: 'pending' },
-      { id: 4, label: 'Final Decision', icon: 'gavel', status: 'pending' },
-      { id: 5, label: 'Settlement', icon: 'payments', status: 'pending' }
+      { id: 2, label: 'Under Review', icon: 'rate_review', status: 'pending' },
+      { id: 3, label: 'Final Decision', icon: 'gavel', status: 'pending' },
+      { id: 4, label: 'Settlement', icon: 'payments', status: 'pending' }
     ];
-
-    // Current State Logic
     if (claim.status === 'Submitted') {
-      steps[0].status = 'completed';
-      steps[1].status = 'active';
+      steps[0].status = 'completed'; steps[1].status = 'active';
     } else if (claim.status === 'UnderReview') {
-      steps[0].status = 'completed';
-      steps[1].status = 'completed';
-      steps[2].status = 'active';
+      steps[0].status = 'completed'; steps[1].status = 'completed'; steps[2].status = 'active';
     } else if (claim.status === 'Approved' || claim.status === 'Rejected') {
-      steps[0].status = 'completed';
-      steps[1].status = 'completed';
-      steps[2].status = 'completed';
-      steps[3].status = 'completed';
-      steps[3].label = claim.status === 'Approved' ? 'Claim Approved' : 'Claim Rejected';
-      steps[3].icon = claim.status === 'Approved' ? 'task_alt' : 'cancel';
-      if (claim.status === 'Approved') steps[4].status = 'active';
+      steps[0].status = 'completed'; steps[1].status = 'completed';
+      steps[2].status = 'completed'; steps[3].status = 'completed';
+      steps[2].label = claim.status === 'Approved' ? 'Claim Approved' : 'Claim Rejected';
+      steps[2].icon = claim.status === 'Approved' ? 'task_alt' : 'cancel';
+      if (claim.status === 'Approved') steps[3].status = 'active';
     } else if (claim.status === 'Settled') {
-      steps[0].status = 'completed';
-      steps[1].status = 'completed';
-      steps[2].status = 'completed';
-      steps[3].status = 'completed';
-      steps[3].label = 'Claim Approved';
-      steps[4].status = 'completed';
+      steps[0].status = 'completed'; steps[1].status = 'completed';
+      steps[2].status = 'completed'; steps[3].status = 'completed';
+      steps[2].label = 'Claim Approved'; steps[3].status = 'completed';
     }
-
     return steps;
   }
 

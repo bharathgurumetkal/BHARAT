@@ -23,6 +23,9 @@ public class PolicyRepository : IPolicyRepository
     {
         return await _context.Policies
             .Include(p => p.Customer)
+            .Include(p => p.Property) // 🔥 Added
+            .Include(p => p.Application)
+                .ThenInclude(a => a.Product)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -31,6 +34,7 @@ public class PolicyRepository : IPolicyRepository
         return await _context.Policies
             .Include(p => p.Customer)
                 .ThenInclude(c => c.User)
+            .Include(p => p.Property) // 🔥 Added
             .Where(p => p.Customer.AssignedAgentId == agentUserId || p.CreatedByAdminId == agentUserId)
             .ToListAsync();
     }
@@ -39,6 +43,7 @@ public class PolicyRepository : IPolicyRepository
     {
         return await _context.Policies
             .Include(p => p.Customer)
+            .Include(p => p.Property) // 🔥 Added
             .Include(p => p.Application)
                 .ThenInclude(a => a.Product)
             .Where(p => p.Customer.UserId == customerUserId)

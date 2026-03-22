@@ -10,6 +10,12 @@ export interface Policy {
   endDate: string | null;
   applicationId: string | null;
   productName: string;
+  
+  // Property details for auto-fill
+  propertyAddress: string;
+  riskZone: string;
+  yearBuilt: number;
+  hasSecuritySystem: boolean;
 }
 
 export interface Claim {
@@ -43,6 +49,11 @@ export interface Claim {
   propertyRiskZone: string;
   propertyHasSecuritySystem: boolean;
 
+  // Incident Details
+  incidentDate?: string | null;
+  incidentLocation?: string | null;
+  damageType?: string | null;
+
   // Documents
   documents: ClaimDocument[];
 
@@ -70,6 +81,8 @@ export interface PolicyApplication {
   assignedAgentName: string | null;
   propertySubCategory: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   yearBuilt: number;
   marketValue: number;
   riskZone: string;

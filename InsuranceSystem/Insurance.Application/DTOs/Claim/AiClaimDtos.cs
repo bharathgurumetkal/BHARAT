@@ -10,6 +10,11 @@ public class AiClaimRequestDto
     public bool HasSecuritySystem { get; set; }
     public int YearBuilt { get; set; }
     public string ClaimReason { get; set; } = default!;
+
+    // New incident detail fields
+    public string? DamageType { get; set; }
+    public string? IncidentLocation { get; set; }
+    public DateTime? IncidentDate { get; set; }
 }
 
 public class AiClaimResponseDto

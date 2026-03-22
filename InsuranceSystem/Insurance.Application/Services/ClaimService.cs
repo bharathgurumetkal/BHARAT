@@ -45,7 +45,10 @@ public class ClaimService : IClaimService
             PolicyId = dto.PolicyId,
             ClaimAmount = dto.ClaimAmount,
             Reason = dto.Reason,
-            Status = ClaimStatus.Submitted
+            Status = ClaimStatus.Submitted,
+            IncidentDate = dto.IncidentDate,
+            IncidentLocation = dto.IncidentLocation,
+            DamageType = dto.DamageType
         };
 
         // Basic Fraud Check: flag for review if amount is suspiciously high
@@ -109,7 +112,10 @@ public class ClaimService : IClaimService
                 MarketValue = policy.Property?.MarketValue ?? 0,
                 HasSecuritySystem = policy.Property?.HasSecuritySystem ?? false,
                 YearBuilt = policy.Property?.YearBuilt ?? 0,
-                ClaimReason = dto.Reason
+                ClaimReason = dto.Reason,
+                DamageType = dto.DamageType,
+                IncidentLocation = dto.IncidentLocation,
+                IncidentDate = dto.IncidentDate
             };
 
             var aiResult = await _aiClaimClient.AnalyzeClaimAsync(request);
@@ -409,6 +415,11 @@ public class ClaimService : IClaimService
             PropertyMarketValue = c.Policy?.Property?.MarketValue ?? 0,
             PropertyRiskZone = c.Policy?.Property?.RiskZone ?? "N/A",
             PropertyHasSecuritySystem = c.Policy?.Property?.HasSecuritySystem ?? false,
+
+            // Incident Details
+            IncidentDate = c.IncidentDate,
+            IncidentLocation = c.IncidentLocation,
+            DamageType = c.DamageType,
 
             // Documents
             Documents = c.Documents.Select(d => new ClaimDocumentDto

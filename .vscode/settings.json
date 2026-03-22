@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\Bhara\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/ai-service"
+  ],
+  "python.analysis.include": [
+    "ai-service"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "pyre2.pythonPath": "C:\\Users\\Bhara\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "pyre2.searchPath": [
+    "${workspaceFolder}/ai-service"
+  ]
+}

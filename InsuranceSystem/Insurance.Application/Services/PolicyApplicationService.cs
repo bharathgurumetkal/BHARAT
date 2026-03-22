@@ -44,12 +44,16 @@ namespace Insurance.Application.Services
             if (dto.RequestedCoverageAmount > product.MaxCoverageAmount)
                 throw new Exception($"Requested coverage exceeds max allowed: {product.MaxCoverageAmount}.");
 
-            // Calculate premium based on product base rate
+            // Calculate premium exactly mirroring frontend actuarial logic
             decimal premium = dto.RequestedCoverageAmount * (product.BaseRatePercentage / 100m);
+            
             if (dto.RiskZone == "High")
-                premium += dto.RequestedCoverageAmount * 0.01m;
-            if (!dto.HasSecuritySystem)
-                premium += 500m;
+                premium *= 1.5m; // 50% Surcharge
+            else if (dto.RiskZone == "Medium")
+                premium *= 1.2m; // 20% Surcharge
+
+            if (dto.HasSecuritySystem)
+                premium *= 0.9m; // 10% Discount
 
             var application = new PolicyApplication
             {
@@ -58,6 +62,8 @@ namespace Insurance.Application.Services
                 CustomerId = customerUserId,
                 PropertySubCategory = dto.PropertySubCategory,
                 Address = dto.Address,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
                 YearBuilt = dto.YearBuilt,
                 MarketValue = dto.MarketValue,
                 RiskZone = dto.RiskZone,
@@ -168,6 +174,8 @@ namespace Insurance.Application.Services
                 Category = application.Product?.PropertyCategory ?? "General",
                 SubCategory = application.PropertySubCategory,
                 Address = application.Address,
+                Latitude = application.Latitude,
+                Longitude = application.Longitude,
                 YearBuilt = application.YearBuilt,
                 MarketValue = application.MarketValue,
                 RiskZone = application.RiskZone,
@@ -268,6 +276,8 @@ namespace Insurance.Application.Services
                 AssignedAgentName = a.AssignedAgent?.Name,
                 PropertySubCategory = a.PropertySubCategory,
                 Address = a.Address,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
                 YearBuilt = a.YearBuilt,
                 MarketValue = a.MarketValue,
                 RiskZone = a.RiskZone,
@@ -295,6 +305,8 @@ namespace Insurance.Application.Services
                 AssignedAgentName = a.AssignedAgent?.Name,
                 PropertySubCategory = a.PropertySubCategory,
                 Address = a.Address,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
                 YearBuilt = a.YearBuilt,
                 MarketValue = a.MarketValue,
                 RiskZone = a.RiskZone,
@@ -322,6 +334,8 @@ namespace Insurance.Application.Services
                 AssignedAgentName = a.AssignedAgent?.Name,
                 PropertySubCategory = a.PropertySubCategory,
                 Address = a.Address,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
                 YearBuilt = a.YearBuilt,
                 MarketValue = a.MarketValue,
                 RiskZone = a.RiskZone,

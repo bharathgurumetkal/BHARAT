@@ -311,6 +311,25 @@
             </div>
           </div>
 
+          <!-- Section 1.5: Incident Details -->
+          <div *ngIf="selectedClaim()!.damageType || selectedClaim()!.incidentDate || selectedClaim()!.incidentLocation" class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Incident Details</h3>
+            <div class="grid grid-cols-2 gap-y-4 gap-x-6">
+              <div *ngIf="selectedClaim()!.damageType">
+                <p class="text-xs text-gray-400 font-medium tracking-tight">Damage Type</p>
+                <p class="text-sm font-bold text-blue-600 mt-1">{{ selectedClaim()!.damageType }}</p>
+              </div>
+              <div *ngIf="selectedClaim()!.incidentDate">
+                <p class="text-xs text-gray-400 font-medium tracking-tight">Incident Date</p>
+                <p class="text-sm font-bold text-violet-600 mt-1">{{ selectedClaim()!.incidentDate | date:'longDate' }}</p>
+              </div>
+              <div *ngIf="selectedClaim()!.incidentLocation" class="col-span-2">
+                <p class="text-xs text-gray-400 font-medium tracking-tight">Incident Location</p>
+                <p class="text-sm font-semibold text-gray-800 mt-1">{{ selectedClaim()!.incidentLocation }}</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Section 2: AI Risk Analysis -->
           <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
             <div class="flex items-center justify-between">

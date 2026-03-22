@@ -9,6 +9,7 @@ import { Policy, Claim, PolicyApplication, PolicyProduct } from '../models/insur
 })
 export class CustomerApiService {
   private apiUrl = `${environment.apiUrl}/Customer`;
+  private aiUrl = 'http://localhost:5000';
 
   constructor(private http: HttpClient) {}
 
@@ -49,5 +50,9 @@ export class CustomerApiService {
       params: { type },
       responseType: 'blob'
     });
+  }
+
+  getAiSmartSuggestions(formData: any): Observable<any> {
+    return this.http.post(`${this.aiUrl}/analyze-claim-smart`, formData);
   }
 }

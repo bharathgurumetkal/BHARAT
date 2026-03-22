@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +29,12 @@ namespace Insurance.Domain.Entities
         public Guid? ReviewedByOfficerId { get; set; }
         public DateTime? ReviewedAt { get; set; }
         public string? ReviewRemarks { get; set; }   // mandatory on rejection
+
+        // Incident Details (added via migration AddIncidentDataToClaim)
+        public DateTime? IncidentDate { get; set; }
+        public string? IncidentLocation { get; set; }
+        public string? DamageType { get; set; }
+        public string? DamageSeverity { get; set; }
 
         // AI Analysis Fields
         public int? AiRiskScore { get; set; }

@@ -46,6 +46,36 @@
                     <p class="text-xs text-gray-400 font-medium italic mb-1">{{ claim.reason }}</p>
                     <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-2">Requested: {{ claim.claimAmount | currency }} • Filed {{ claim.createdAt | date:'shortDate' : '+0530' }}</div>
                     
+                    <!-- New Incident Details -->
+                    <div class="flex flex-wrap gap-3 mb-3">
+                        <div *ngIf="claim.incidentDate" class="flex items-center gap-1.5 px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[10px] font-bold border border-violet-100">
+                            <span class="material-icons text-xs">event</span>
+                            {{ claim.incidentDate | date:'mediumDate' }}
+                        </div>
+                        <div *ngIf="claim.damageType" class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold border border-blue-100">
+                            <span class="material-icons text-xs">report_problem</span>
+                            {{ claim.damageType }}
+                        </div>
+                        <div *ngIf="claim.incidentLocation" class="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-[10px] font-bold border border-gray-100">
+                            <span class="material-icons text-xs">location_on</span>
+                            {{ claim.incidentLocation }}
+                        </div>
+                    </div>
+
+                    <!-- AI Risk Analysis -->
+                    <div *ngIf="claim.aiRiskLevel" class="p-3 bg-gray-50/50 rounded-xl border border-gray-100 mb-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center gap-2">
+                                <span class="material-icons text-xs text-violet-500">auto_awesome</span>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">AI Assessment</span>
+                            </div>
+                            <span [class]="'px-2 py-0.5 text-[8px] font-black uppercase rounded-md border ' + getRiskLevelClass(claim.aiRiskLevel)">
+                                {{ claim.aiRiskLevel }} Risk ({{ claim.aiRiskScore }}%)
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-gray-500 leading-relaxed italic">"{{ claim.aiExplanation }}"</p>
+                    </div>
+                    
                     <!-- Documents List -->
                     <div *ngIf="claim.documents && claim.documents.length > 0" class="flex flex-wrap gap-2 mt-2">
                         <a *ngFor="let doc of claim.documents; let i = index" 

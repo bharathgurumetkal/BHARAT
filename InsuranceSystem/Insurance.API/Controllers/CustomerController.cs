@@ -1,4 +1,4 @@
-﻿using Insurance.Application.DTOs.Payment;
+using Insurance.Application.DTOs.Payment;
 using Insurance.Application.DTOs.Claim;
 using Insurance.Application.DTOs.PolicyApplication;
 using Insurance.Application.Interfaces;

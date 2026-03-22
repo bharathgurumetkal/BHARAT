@@ -129,4 +129,13 @@ export class ManageClaimsComponent implements OnInit {
     if (filePath.startsWith('http')) return filePath;
     return base + (filePath.startsWith('/') ? '' : '/') + filePath;
   }
+
+  getRiskLevelClass(riskLevel: string): string {
+    switch (riskLevel?.toLowerCase()) {
+      case 'low': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'medium': return 'bg-amber-50 text-amber-600 border-amber-100';
+      case 'high': return 'bg-red-50 text-red-600 border-red-100';
+      default: return 'bg-gray-50 text-gray-500 border-gray-100';
+    }
+  }
 }

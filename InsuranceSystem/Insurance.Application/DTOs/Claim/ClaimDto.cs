@@ -45,6 +45,11 @@ namespace Insurance.Application.DTOs.Claim
         public string PropertyRiskZone { get; set; } = default!;
         public bool PropertyHasSecuritySystem { get; set; }
 
+        // Incident Details
+        public DateTime? IncidentDate { get; set; }
+        public string? IncidentLocation { get; set; }
+        public string? DamageType { get; set; }
+
         // AI Analysis
         public int? AiRiskScore { get; set; }
         public string? AiRiskLevel { get; set; }

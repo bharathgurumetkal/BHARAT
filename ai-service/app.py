@@ -38,6 +38,28 @@ def analyze_claim():
             "message": str(e)
         }), 500
 
+@app.route('/analyze-claim-smart', methods=['POST'])
+def analyze_claim_smart():
+    """
+    New endpoint for the AI Smart Assistant section in the claim form.
+    Returns recommended documents, missing fields, and risk level assessment.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        result = gemini_service.analyze_claim_smart(data)
+        
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({
+            "error": "Internal Server Error",
+            "message": str(e)
+        }), 500
+
 @app.route('/analyze-prospect', methods=['POST'])
 def analyze_prospect():
     try:

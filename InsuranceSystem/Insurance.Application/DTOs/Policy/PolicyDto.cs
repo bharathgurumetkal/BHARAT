@@ -15,5 +15,11 @@ namespace Insurance.Application.DTOs.Policy
         public DateTime? EndDate { get; set; }
         public Guid? ApplicationId { get; set; }
         public string ProductName { get; set; } = default!;
+
+        // Property Details for auto-fill
+        public string PropertyAddress { get; set; } = default!;
+        public string RiskZone { get; set; } = default!;
+        public int YearBuilt { get; set; }
+        public bool HasSecuritySystem { get; set; }
     }
 }

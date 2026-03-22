@@ -5,6 +5,8 @@ import { PolicyProduct, Policy, PolicyApplication } from '../../../../core/model
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, catchError, of } from 'rxjs';
 
+declare const google: any;
+
 @Component({
   selector: 'app-product-list',
   standalone: true,
@@ -23,6 +25,10 @@ export class ProductListComponent implements OnInit {
   successMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
   estimatedPremium = signal<number>(0);
+  
+  private autocompleteInstance: any = null;
+  private mapInstance: any = null;
+  private mapMarker: any = null;
 
   constructor(
     private customerService: CustomerApiService,
@@ -31,11 +37,18 @@ export class ProductListComponent implements OnInit {
     this.applicationForm = this.fb.group({
       propertySubCategory: ['', Validators.required],
       address: ['', Validators.required],
+      latitude: [null],
+      longitude: [null],
       yearBuilt: [new Date().getFullYear(), [Validators.required, Validators.min(1800)]],
       marketValue: [0, [Validators.required, Validators.min(1000)]],
       riskZone: ['Low', Validators.required],
       hasSecuritySystem: [false],
       requestedCoverageAmount: [0, [Validators.required, Validators.min(1000)]]
+    });
+
+    // Automatically recalculate estimate whenever any form field changes
+    this.applicationForm.valueChanges.subscribe(() => {
+      this.calculateEstimatedPremium();
     });
   }
 
@@ -105,16 +118,93 @@ export class ProductListComponent implements OnInit {
     this.successMessage.set(null);
     this.errorMessage.set(null);
     this.estimatedPremium.set(0);
+
+    // Initialize Google Maps Autocomplete
+    setTimeout(() => {
+      this.initGoogleMapsAutocomplete();
+    }, 100);
   }
 
-  onMarketValueChange(): void {
-    const product = this.selectedProduct();
-    const marketValue = this.applicationForm.get('marketValue')?.value || 0;
-    if (product && marketValue > 0) {
-      this.estimatedPremium.set(marketValue * (product.baseRatePercentage / 100));
-    } else {
-      this.estimatedPremium.set(0);
+  private initGoogleMapsAutocomplete(): void {
+    const inputElement = document.getElementById('property-address-input') as HTMLInputElement;
+    const mapElement = document.getElementById('property-map') as HTMLElement;
+    if (!inputElement || !mapElement || typeof google === 'undefined') return;
+
+    if (this.autocompleteInstance) {
+      google.maps.event.clearInstanceListeners(this.autocompleteInstance);
     }
+
+    // Default Location
+    const initialLocation = { lat: 20.5937, lng: 78.9629 };
+
+    this.mapInstance = new google.maps.Map(mapElement, {
+      center: initialLocation,
+      zoom: 4,
+      mapTypeControl: false,
+      streetViewControl: false,
+      styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }]
+    });
+
+    this.autocompleteInstance = new google.maps.places.Autocomplete(inputElement, {
+      types: ['address']
+    });
+
+    this.autocompleteInstance.bindTo('bounds', this.mapInstance);
+    this.autocompleteInstance.setFields(['address_components', 'geometry', 'formatted_address']);
+
+    this.autocompleteInstance.addListener('place_changed', () => {
+      const place = this.autocompleteInstance.getPlace();
+      if (!place.geometry || !place.geometry.location) return;
+
+      if (place.geometry.viewport) {
+        this.mapInstance.fitBounds(place.geometry.viewport);
+      } else {
+        this.mapInstance.setCenter(place.geometry.location);
+        this.mapInstance.setZoom(17);
+      }
+
+      if (!this.mapMarker) {
+        this.mapMarker = new google.maps.Marker({
+          map: this.mapInstance,
+          animation: google.maps.Animation.DROP
+        });
+      }
+      this.mapMarker.setPosition(place.geometry.location);
+
+      this.applicationForm.patchValue({
+        address: place.formatted_address,
+        latitude: place.geometry.location.lat(),
+        longitude: place.geometry.location.lng()
+      });
+    });
+  }
+
+  calculateEstimatedPremium(): void {
+    const product = this.selectedProduct();
+    const formVals = this.applicationForm.value;
+    const coverage = formVals.requestedCoverageAmount || 0;
+
+    if (!product || coverage <= 0) {
+      this.estimatedPremium.set(0);
+      return;
+    }
+
+    // 1. Base Premium (Standard Industry Calculation)
+    let premium = coverage * (product.baseRatePercentage / 100);
+
+    // 2. Risk Zone Multiplier Surcharge
+    if (formVals.riskZone === 'High') {
+      premium *= 1.5; // 50% Surcharge
+    } else if (formVals.riskZone === 'Medium') {
+      premium *= 1.2; // 20% Surcharge
+    }
+
+    // 3. Security System Discount
+    if (formVals.hasSecuritySystem) {
+      premium *= 0.9; // 10% Discount
+    }
+
+    this.estimatedPremium.set(premium);
   }
 
   onSubmit(): void {
@@ -145,6 +235,9 @@ export class ProductListComponent implements OnInit {
     this.successMessage.set(null);
     this.errorMessage.set(null);
     this.applicationForm.reset({
+      address: '',
+      latitude: null,
+      longitude: null,
       yearBuilt: new Date().getFullYear(),
       marketValue: 0,
       riskZone: 'Low',

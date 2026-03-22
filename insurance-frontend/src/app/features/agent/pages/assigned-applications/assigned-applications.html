@@ -177,6 +177,12 @@
               <div class="bg-white/50 p-3 rounded-lg border border-gray-100">
                 <p class="text-xs text-gray-400 font-medium">Physical Address</p>
                 <p class="text-sm font-semibold text-gray-800 mt-1">{{ selectedApp()?.address }}</p>
+                
+                <div id="agent-property-map" class="w-full h-48 mt-3 rounded-xl border border-gray-200 shadow-inner overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <!-- Fallback map loading text / fallback for no-coords -->
+                  <span *ngIf="!selectedApp()?.latitude" class="text-xs text-gray-400 font-medium">No Coordinates Provided</span>
+                  <span *ngIf="selectedApp()?.latitude" class="text-xs text-gray-400 font-medium">Loading Map...</span>
+                </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>

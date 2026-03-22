@@ -128,6 +128,18 @@ namespace Insurance.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DamageSeverity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DamageType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("IncidentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IncidentLocation")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("PolicyId")
                         .HasColumnType("uniqueidentifier");
 
@@ -411,6 +423,12 @@ namespace Insurance.Infrastructure.Migrations
                     b.Property<bool>("HasSecuritySystem")
                         .HasColumnType("bit");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<decimal>("MarketValue")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -510,6 +528,12 @@ namespace Insurance.Infrastructure.Migrations
 
                     b.Property<bool>("HasSecuritySystem")
                         .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<decimal>("MarketValue")
                         .HasPrecision(18, 2)

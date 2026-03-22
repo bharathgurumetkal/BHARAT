@@ -9,6 +9,8 @@ namespace Insurance.Application.DTOs.PolicyApplication
         public decimal MarketValue { get; set; }
         public string RiskZone { get; set; } = default!;
         public bool HasSecuritySystem { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public decimal RequestedCoverageAmount { get; set; }
     }
 
@@ -32,6 +34,8 @@ namespace Insurance.Application.DTOs.PolicyApplication
         public decimal MarketValue { get; set; }
         public string RiskZone { get; set; } = default!;
         public bool HasSecuritySystem { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public decimal RequestedCoverageAmount { get; set; }
         public decimal CalculatedPremium { get; set; }
         public string Status { get; set; } = default!;

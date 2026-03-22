@@ -808,6 +808,16 @@
                   "Reason": {
                     "type": "string"
                   },
+                  "IncidentDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "IncidentLocation": {
+                    "type": "string"
+                  },
+                  "DamageType": {
+                    "type": "string"
+                  },
                   "Documents": {
                     "type": "array",
                     "items": {
@@ -831,6 +841,15 @@
                   "style": "form"
                 },
                 "Reason": {
+                  "style": "form"
+                },
+                "IncidentDate": {
+                  "style": "form"
+                },
+                "IncidentLocation": {
+                  "style": "form"
+                },
+                "DamageType": {
                   "style": "form"
                 },
                 "Documents": {
@@ -1123,6 +1142,16 @@
           },
           "hasSecuritySystem": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           },
           "requestedCoverageAmount": {
             "type": "number",
